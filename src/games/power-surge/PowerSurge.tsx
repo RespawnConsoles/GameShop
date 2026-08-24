@@ -79,8 +79,8 @@ function drawEnemy(ctx: CanvasRenderingContext2D, e: Enemy) {
   }
 }
 
-function nes(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, size: number, color: string, align: CanvasTextAlign = 'left') {
-  ctx.font = `${size}px "Press Start 2P", monospace`;
+function hudText(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, size: number, color: string, align: CanvasTextAlign = 'left') {
+  ctx.font = `600 ${size}px system-ui, sans-serif`;
   ctx.fillStyle = color;
   ctx.textAlign = align;
   ctx.fillText(text, x, y);
@@ -189,17 +189,17 @@ export function PowerSurge({ onExit, paused }: { onExit: () => void; paused: boo
 
       if (!g.started || g.gameOver) {
         if (g.gameOver) {
-          nes(ctx, 'GAME OVER', W / 2, H / 2 - 30, 14, '#d82800', 'center');
-          nes(ctx, `SCORE: ${g.score}`, W / 2, H / 2 + 10, 9, '#f8b800', 'center');
-          nes(ctx, 'PRESS SPACE', W / 2, H / 2 + 50, 8, '#fcfcfc', 'center');
-          nes(ctx, 'TO PLAY AGAIN', W / 2, H / 2 + 70, 8, '#fcfcfc', 'center');
+          hudText(ctx, 'Game Over', W / 2, H / 2 - 30, 26, '#d82800', 'center');
+          hudText(ctx, `Score: ${g.score}`, W / 2, H / 2 + 10, 16, '#f8b800', 'center');
+          hudText(ctx, 'Press Space', W / 2, H / 2 + 50, 14, '#fcfcfc', 'center');
+          hudText(ctx, 'to play again', W / 2, H / 2 + 70, 14, '#fcfcfc', 'center');
         } else {
-          nes(ctx, 'POWER SURGE', W / 2, H / 2 - 70, 15, '#f8b800', 'center');
-          nes(ctx, 'DODGE THE BOLTS', W / 2, H / 2 - 25, 8, '#fcfcfc', 'center');
-          nes(ctx, 'SHOOT THE ENEMIES', W / 2, H / 2, 8, '#fcfcfc', 'center');
-          nes(ctx, '← → MOVE', W / 2, H / 2 + 50, 7, '#bcbcbc', 'center');
-          nes(ctx, 'SPACE / ↑ SHOOT', W / 2, H / 2 + 70, 7, '#bcbcbc', 'center');
-          nes(ctx, 'PRESS SPACE TO START', W / 2, H / 2 + 120, 7, '#00b800', 'center');
+          hudText(ctx, 'Power Surge', W / 2, H / 2 - 70, 30, '#f8b800', 'center');
+          hudText(ctx, 'Dodge the bolts', W / 2, H / 2 - 25, 14, '#fcfcfc', 'center');
+          hudText(ctx, 'Shoot the enemies', W / 2, H / 2, 14, '#fcfcfc', 'center');
+          hudText(ctx, '← → move', W / 2, H / 2 + 50, 13, '#bcbcbc', 'center');
+          hudText(ctx, 'Space / ↑ shoot', W / 2, H / 2 + 70, 13, '#bcbcbc', 'center');
+          hudText(ctx, 'Press space to start', W / 2, H / 2 + 120, 13, '#00b800', 'center');
         }
         raf = requestAnimationFrame(loop);
         return;
@@ -326,15 +326,15 @@ export function PowerSurge({ onExit, paused }: { onExit: () => void; paused: boo
       ctx.fillRect(0, 0, W, 34);
       ctx.fillStyle = '#333';
       ctx.fillRect(0, 34, W, 2);
-      nes(ctx, `${g.score}`, 10, 22, 8, '#f8b800');
-      nes(ctx, `LVL ${g.level}`, W / 2, 22, 8, '#00b800', 'center');
+      hudText(ctx, `${g.score}`, 10, 23, 14, '#f8b800');
+      hudText(ctx, `Lvl ${g.level}`, W / 2, 23, 14, '#00b800', 'center');
       for (let i = 0; i < g.lives; i++) {
         ctx.font = '16px serif';
         ctx.fillText('♥', W - 20 - i * 22, 24);
       }
       let indX = 10;
-      if (g.rapidFire) { nes(ctx, '⚡RAPID', indX, H - 8, 6, '#f8b800'); indX += 80; }
-      if (g.shield) { nes(ctx, '🛡SHIELD', indX, H - 8, 6, '#4488ff'); }
+      if (g.rapidFire) { hudText(ctx, '⚡ Rapid', indX, H - 8, 11, '#f8b800'); indX += 80; }
+      if (g.shield) { hudText(ctx, '🛡 Shield', indX, H - 8, 11, '#4488ff'); }
 
       raf = requestAnimationFrame(loop);
     };
@@ -344,26 +344,26 @@ export function PowerSurge({ onExit, paused }: { onExit: () => void; paused: boo
   }, []);
 
   return (
-    <div className="retro-game flex flex-col items-center gap-3 py-6 px-4 overflow-y-auto" style={{ minHeight: '100%' }}>
+    <div className="flex flex-col items-center gap-3 py-6 px-4 overflow-y-auto bg-black" style={{ minHeight: '100%' }}>
       <button
         onClick={onExit}
-        className="self-start border-2 border-white/40 text-white/70 hover:text-white hover:border-white px-3 py-1.5 text-[9px]"
-        style={{ fontFamily: 'var(--font-nes), monospace' }}
+        className="self-start rounded-md border border-white/20 px-3 py-1.5 text-sm text-white/70 hover:border-white/40 hover:text-white"
       >
-        ← STORE
+        ← Store
       </button>
       <canvas
         ref={canvasRef}
         width={W}
         height={H}
-        style={{ border: '4px solid #fcfcfc', display: 'block', maxWidth: '100%', cursor: 'none' }}
+        className="rounded-lg border border-white/10"
+        style={{ display: 'block', maxWidth: '100%', cursor: 'none' }}
         tabIndex={0}
         onClick={() => { if (!s.current.started || s.current.gameOver) reset(); }}
       />
-      <div style={{ display: 'flex', gap: 24, fontFamily: 'var(--font-nes), monospace', fontSize: 8, color: '#555' }}>
-        <span style={{ color: '#bcbcbc' }}>← → MOVE</span>
-        <span style={{ color: '#bcbcbc' }}>SPACE / ↑ SHOOT</span>
-        <span style={{ color: '#bcbcbc' }}>CLICK TO START</span>
+      <div className="flex gap-6 text-xs text-white/40">
+        <span>← → Move</span>
+        <span>Space / ↑ Shoot</span>
+        <span>Click to start</span>
       </div>
     </div>
   );

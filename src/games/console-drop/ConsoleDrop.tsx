@@ -48,19 +48,19 @@ function makeItem(level: number): Item {
 
 function Leaderboard({ scores }: { scores: ScoreEntry[] }) {
   return (
-    <div style={{ border: '4px solid #fcfcfc', background: '#000', minWidth: 140 }}>
-      <div style={{ background: '#f8b800', borderBottom: '4px solid #fcfcfc', padding: '4px 8px' }}>
-        <p className="text-[8px]" style={{ color: '#000' }}>★ TOP SCORES</p>
+    <div className="rounded-lg border border-white/10 bg-white/[0.03] overflow-hidden" style={{ minWidth: 160 }}>
+      <div className="border-b border-white/10 bg-white/5 px-3 py-2">
+        <p className="text-xs font-semibold text-white/70">Top Scores</p>
       </div>
       <div className="flex flex-col gap-2 p-3">
-        {scores.length === 0 && <p className="text-[7px]" style={{ color: '#444' }}>NO SCORES YET</p>}
+        {scores.length === 0 && <p className="text-xs text-white/30">No scores yet</p>}
         {scores.map((s, i) => (
           <div key={i} className="flex items-center justify-between gap-4">
-            <span className="text-[8px]" style={{ color: ['#f8b800', '#bcbcbc', '#cd7f32'][i] ?? '#555' }}>
-              {['1ST', '2ND', '3RD'][i]}
+            <span className="text-xs font-medium" style={{ color: ['#f8b800', '#bcbcbc', '#cd7f32'][i] ?? '#666' }}>
+              #{i + 1}
             </span>
-            <span className="text-[8px]" style={{ color: '#fcfcfc' }}>{s.name}</span>
-            <span className="text-[8px]" style={{ color: '#00b800' }}>{String(s.score).padStart(6, '0')}</span>
+            <span className="text-xs text-white/90">{s.name}</span>
+            <span className="text-xs font-semibold text-emerald-400">{s.score.toLocaleString()}</span>
           </div>
         ))}
       </div>
@@ -81,18 +81,18 @@ function NameEntry({ onSubmit }: { onSubmit: (name: string) => void }) {
       }}
       className="flex flex-col items-center gap-3"
     >
-      <p className="text-[8px]" style={{ color: '#bcbcbc' }}>ENTER YOUR NAME</p>
+      <p className="text-xs text-white/60">Enter your name</p>
       <input
-        className="text-center border-2 border-white/30 bg-black text-white px-2 py-1"
-        style={{ width: 120, textTransform: 'uppercase', fontFamily: 'var(--font-nes), monospace', fontSize: 10 }}
+        className="rounded-md border border-white/20 bg-black text-center text-sm text-white px-3 py-1.5 focus:border-emerald-500/50 focus:outline-none"
+        style={{ width: 120, textTransform: 'uppercase' }}
         maxLength={3}
         placeholder="AAA"
         value={name}
         onChange={(e) => setName(e.target.value.toUpperCase().slice(0, 3))}
         autoFocus
       />
-      <button type="submit" className="border-2 border-white px-4 py-2 text-[9px] text-white hover:bg-white/10">
-        ▶ SUBMIT
+      <button type="submit" className="rounded-md bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-500">
+        Submit
       </button>
     </form>
   );
@@ -158,7 +158,7 @@ export function ConsoleDrop({ onExit, paused }: { onExit: () => void; paused: bo
       ctx.fillRect(item.x + ITEM_W - 4, item.y, 4, ITEM_H);
       ctx.fillRect(item.x, item.y + ITEM_H - 4, ITEM_W, 4);
       ctx.fillStyle = '#fcfcfc';
-      ctx.font = 'bold 9px monospace';
+      ctx.font = '600 12px system-ui, sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText(item.type.label, item.x + ITEM_W / 2, item.y + 18);
     });
@@ -167,7 +167,7 @@ export function ConsoleDrop({ onExit, paused }: { onExit: () => void; paused: bo
     s.flashes.forEach((f) => {
       ctx.globalAlpha = f.alpha;
       ctx.fillStyle = f.color;
-      ctx.font = 'bold 10px monospace';
+      ctx.font = '600 13px system-ui, sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText(f.label, f.x, f.y);
       f.y -= 1.2;
@@ -294,31 +294,28 @@ export function ConsoleDrop({ onExit, paused }: { onExit: () => void; paused: bo
   }, []);
 
   return (
-    <div
-      className="retro-game flex flex-col items-center gap-4 py-8 px-4 overflow-y-auto"
-      style={{ background: '#000', minHeight: '100%', fontFamily: 'var(--font-nes), monospace' }}
-    >
+    <div className="flex flex-col items-center gap-4 py-8 px-4 overflow-y-auto bg-black text-white" style={{ minHeight: '100%' }}>
       <div className="w-full max-w-[760px]">
-        <div className="flex justify-between items-center px-4 py-2" style={{ border: '4px solid #fcfcfc', background: '#0a0a0a' }}>
-          <span className="text-[9px]" style={{ color: '#f8b800' }}>
-            SCORE: <span style={{ color: '#fcfcfc' }}>{String(ui.score).padStart(6, '0')}</span>
+        <div className="flex justify-between items-center rounded-lg border border-white/10 bg-white/[0.03] px-4 py-2.5">
+          <span className="text-sm text-white/60">
+            Score: <span className="font-semibold text-white">{ui.score.toLocaleString()}</span>
           </span>
-          <span className="text-[9px]" style={{ color: '#f8b800' }}>
-            LVL: <span style={{ color: '#fcfcfc' }}>{ui.level}</span>
+          <span className="text-sm text-white/60">
+            Level: <span className="font-semibold text-white">{ui.level}</span>
           </span>
-          <span className="text-[9px]" style={{ color: '#d82800' }}>
+          <span className="text-sm text-rose-500">
             {'♥'.repeat(ui.lives)}
-            <span style={{ color: '#333' }}>{'♥'.repeat(Math.max(0, 3 - ui.lives))}</span>
+            <span className="text-white/20">{'♥'.repeat(Math.max(0, 3 - ui.lives))}</span>
           </span>
         </div>
       </div>
 
       <div className="flex flex-col lg:flex-row gap-4 items-center lg:items-start w-full max-w-[760px]">
-        <div className="hidden lg:flex flex-col gap-4 w-[140px] shrink-0">
+        <div className="hidden lg:flex flex-col gap-4 w-[160px] shrink-0">
           <Leaderboard scores={scores} />
         </div>
 
-        <div style={{ position: 'relative', border: '4px solid #fcfcfc', flex: '0 0 auto', maxWidth: '100%' }}>
+        <div className="relative rounded-lg border border-white/10 overflow-hidden" style={{ flex: '0 0 auto', maxWidth: '100%' }}>
           <canvas
             ref={canvasRef}
             width={W}
@@ -328,65 +325,60 @@ export function ConsoleDrop({ onExit, paused }: { onExit: () => void; paused: bo
           />
 
           {phase === 'title' && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-4" style={{ background: 'rgba(0,0,0,0.92)', zIndex: 10 }}>
-              <p className="text-[9px]" style={{ color: '#f8b800' }}>★ ★ ★ ★ ★ ★ ★</p>
-              <p className="text-[20px]" style={{ color: '#fcfcfc' }}>CONSOLE</p>
-              <p className="text-[20px]" style={{ color: '#00b800' }}>DROP</p>
-              <p className="text-[8px] mt-2" style={{ color: '#bcbcbc', lineHeight: 2, textAlign: 'center' }}>
-                CATCH THE FALLING CONSOLES.<br />MISS 3 AND IT&apos;S GAME OVER.
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/90" style={{ zIndex: 10 }}>
+              <h1 className="text-3xl font-bold text-white">Console Drop</h1>
+              <p className="max-w-xs text-center text-sm text-white/50">
+                Catch the falling consoles. Miss 3 and it&apos;s game over.
               </p>
-              <p className="text-[8px]" style={{ color: '#555', lineHeight: 2 }}>← → / A D / MOUSE</p>
-              <button onClick={startGame} className="mt-2 border-2 border-white px-4 py-2 text-[11px] text-white hover:bg-white/10">
-                ▶ START GAME
+              <p className="text-xs text-white/30">Arrow keys, A/D, or mouse to move</p>
+              <button onClick={startGame} className="mt-2 rounded-md bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-emerald-500">
+                Start Game
               </button>
-              <p className="text-[9px]" style={{ color: '#f8b800' }}>★ ★ ★ ★ ★ ★ ★</p>
             </div>
           )}
 
           {phase === 'naming' && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-6" style={{ background: 'rgba(0,0,0,0.95)', zIndex: 10 }}>
-              <p className="text-[14px]" style={{ color: '#d82800' }}>GAME OVER</p>
-              <div style={{ border: '4px solid #fcfcfc', padding: '16px 28px', background: '#0a0a0a', textAlign: 'center' }}>
-                <p className="text-[8px] mb-1" style={{ color: '#bcbcbc' }}>FINAL SCORE</p>
-                <p className="text-[22px]" style={{ color: '#f8b800' }}>{String(finalScore.score).padStart(6, '0')}</p>
-                <p className="text-[7px] mt-1" style={{ color: '#555' }}>LVL {finalScore.level}</p>
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-6 bg-black/95" style={{ zIndex: 10 }}>
+              <p className="text-xl font-bold text-rose-500">Game Over</p>
+              <div className="rounded-lg border border-white/10 bg-white/[0.03] px-8 py-4 text-center">
+                <p className="mb-1 text-xs text-white/50">Final Score</p>
+                <p className="text-3xl font-bold text-white">{ui.score.toLocaleString()}</p>
+                <p className="mt-1 text-xs text-white/40">Level {finalScore.level}</p>
               </div>
               <NameEntry onSubmit={submitFinalScore} />
             </div>
           )}
 
           {phase === 'over' && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-4" style={{ background: 'rgba(0,0,0,0.92)', zIndex: 10 }}>
-              <p className="text-[14px]" style={{ color: '#d82800' }}>GAME OVER</p>
-              <div style={{ border: '4px solid #fcfcfc', padding: '16px 28px', background: '#0a0a0a', textAlign: 'center' }}>
-                <p className="text-[8px] mb-1" style={{ color: '#bcbcbc' }}>FINAL SCORE</p>
-                <p className="text-[22px]" style={{ color: '#f8b800' }}>{String(finalScore.score).padStart(6, '0')}</p>
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-black/90" style={{ zIndex: 10 }}>
+              <p className="text-xl font-bold text-rose-500">Game Over</p>
+              <div className="rounded-lg border border-white/10 bg-white/[0.03] px-8 py-4 text-center">
+                <p className="mb-1 text-xs text-white/50">Final Score</p>
+                <p className="text-3xl font-bold text-white">{finalScore.score.toLocaleString()}</p>
                 {finalScore.rank > 0 && (
-                  <p className="text-[8px] mt-2" style={{ color: '#00b800' }}>#{finalScore.rank} ALL TIME</p>
+                  <p className="mt-2 text-xs text-emerald-400">#{finalScore.rank} all time</p>
                 )}
               </div>
-              <button onClick={startGame} className="border-2 border-white px-4 py-2 text-[9px] text-white hover:bg-white/10">
-                ▶ PLAY AGAIN
+              <button onClick={startGame} className="rounded-md bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-emerald-500">
+                Play Again
               </button>
             </div>
           )}
         </div>
 
-        <div className="hidden lg:flex flex-col gap-4 w-[140px] shrink-0">
-          <button onClick={onExit} className="block text-center p-3 w-full" style={{ border: '4px solid #fcfcfc', background: '#0a0a0a' }}>
-            <p className="text-[18px] mb-2">🏪</p>
-            <p className="text-[7px] leading-loose" style={{ color: '#fcfcfc' }}>RETURN<br />TO STORE</p>
-            <p className="text-[8px] mt-2" style={{ color: '#00b800' }}>▶ GO</p>
+        <div className="hidden lg:flex flex-col gap-4 w-[160px] shrink-0">
+          <button onClick={onExit} className="block w-full rounded-lg border border-white/10 bg-white/[0.03] p-3 text-center hover:bg-white/[0.06]">
+            <p className="text-sm font-medium text-white">← Store</p>
           </button>
 
-          <div style={{ border: '4px solid #333', padding: '10px', background: '#0a0a0a' }}>
-            <p className="text-[7px] mb-3" style={{ color: '#555' }}>POINT KEY</p>
+          <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
+            <p className="mb-3 text-xs font-semibold text-white/50">Point Key</p>
             <div className="flex flex-col gap-2">
               {CONSOLE_TYPES.map((c) => (
-                <div key={c.label} className="flex items-center justify-between">
-                  <div style={{ background: c.color, width: 8, height: 8, flexShrink: 0 }} />
-                  <span className="text-[7px]" style={{ color: '#bcbcbc' }}>{c.label}</span>
-                  <span className="text-[7px]" style={{ color: c.color }}>+{c.pts}</span>
+                <div key={c.label} className="flex items-center justify-between gap-2">
+                  <div className="h-2.5 w-2.5 shrink-0 rounded-sm" style={{ background: c.color }} />
+                  <span className="text-xs text-white/60">{c.label}</span>
+                  <span className="text-xs font-medium" style={{ color: c.color }}>+{c.pts}</span>
                 </div>
               ))}
             </div>
@@ -397,9 +389,8 @@ export function ConsoleDrop({ onExit, paused }: { onExit: () => void; paused: bo
       <div className="flex lg:hidden gap-3 w-full max-w-[480px]">
         <div className="flex-1"><Leaderboard scores={scores} /></div>
         <div className="flex flex-col gap-3 shrink-0">
-          <button onClick={onExit} className="block text-center p-3" style={{ border: '4px solid #fcfcfc', background: '#0a0a0a' }}>
-            <p className="text-[14px] mb-1">🏪</p>
-            <p className="text-[7px] leading-loose" style={{ color: '#fcfcfc' }}>RETURN<br />TO STORE</p>
+          <button onClick={onExit} className="rounded-lg border border-white/10 bg-white/[0.03] p-3 text-center text-sm text-white hover:bg-white/[0.06]">
+            ← Store
           </button>
         </div>
       </div>

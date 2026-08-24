@@ -506,7 +506,7 @@ export function DungeonArchitect({ onExit, paused }: { onExit: () => void; pause
 
   if (gameOver) {
     return (
-      <div className="retro-game min-h-full bg-[#0d0d0f] flex items-center justify-center relative">
+      <div className="min-h-full bg-[#0d0d0f] flex items-center justify-center relative">
         <div className="absolute top-4 left-4">{ExitButton}</div>
         <div className="text-center">
           <div className="text-6xl mb-4">🏆</div>
@@ -531,7 +531,7 @@ export function DungeonArchitect({ onExit, paused }: { onExit: () => void; pause
     ] as const;
 
     return (
-      <div className="retro-game min-h-full bg-[#0d0d0f] text-white flex flex-col overflow-auto">
+      <div className="min-h-full bg-[#0d0d0f] text-white flex flex-col overflow-auto">
         <div className="bg-[#0a0a10] border-b border-[#222] px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
             {ExitButton}
@@ -616,7 +616,7 @@ export function DungeonArchitect({ onExit, paused }: { onExit: () => void; pause
   }
 
   return (
-    <div className="retro-game min-h-full bg-[#0d0d0f] text-white flex flex-col select-none">
+    <div className="min-h-full bg-[#0d0d0f] text-white flex flex-col select-none">
       {pendingUnlocks.length > 0 && (
         <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center">
           <div className="bg-[#111118] border border-[#333] p-8 max-w-sm w-full text-center">

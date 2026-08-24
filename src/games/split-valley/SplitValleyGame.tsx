@@ -703,7 +703,7 @@ export function SplitValleyGame({ onExit }: { onExit: () => void; paused: boolea
 
   if (isDraw) {
     return (
-      <div className="retro-game fixed inset-0 flex items-center justify-center z-50" style={{ background: 'rgba(0,0,0,0.96)' }}>
+      <div className="fixed inset-0 flex items-center justify-center z-50" style={{ background: 'rgba(0,0,0,0.96)' }}>
         <div className="absolute top-4 left-4">{ExitButton}</div>
         <div className="text-center font-mono">
           <p style={{ fontSize: 48, marginBottom: 12 }}>🤝</p>
@@ -720,7 +720,7 @@ export function SplitValleyGame({ onExit }: { onExit: () => void; paused: boolea
 
   if (winner) {
     return (
-      <div className="retro-game fixed inset-0 flex items-center justify-center z-50" style={{ background: 'rgba(0,0,0,0.96)' }}>
+      <div className="fixed inset-0 flex items-center justify-center z-50" style={{ background: 'rgba(0,0,0,0.96)' }}>
         <div className="absolute top-4 left-4">{ExitButton}</div>
         <div className="text-center font-mono">
           <p style={{ fontSize: 56, marginBottom: 12 }}>{winner === 'eagles' ? '🦅' : '🐍'}</p>
@@ -739,7 +739,7 @@ export function SplitValleyGame({ onExit }: { onExit: () => void; paused: boolea
   }
 
   return (
-    <div className="retro-game flex flex-col h-full" style={{ background: '#111', overflow: 'hidden' }}>
+    <div className="flex flex-col h-full" style={{ background: '#111', overflow: 'hidden' }}>
       <div className="bg-zinc-900 border-b border-zinc-700 px-4 py-1.5">{ExitButton}</div>
       <GameHUD
         state={state}

@@ -183,60 +183,56 @@ export function ConsoleClicker({ onExit, paused }: { onExit: () => void; paused:
   const HL = '#f8b800';
 
   return (
-    <div className="retro-game overflow-y-auto" style={{ minHeight: '100%', background: '#000', padding: '24px 16px', fontFamily: 'var(--font-nes), monospace' }}>
-      <div style={{ width: '100%', maxWidth: 900, margin: '0 auto' }}>
+    <div className="overflow-y-auto bg-black" style={{ minHeight: '100%', padding: '24px 16px' }}>
+      <div className="mx-auto" style={{ width: '100%', maxWidth: 900 }}>
         <button
           onClick={onExit}
-          className="border-2 border-white/40 text-white/70 hover:text-white hover:border-white px-3 py-1.5 text-[9px] mb-4"
+          className="mb-4 rounded-md border border-white/20 px-3 py-1.5 text-sm text-white/70 hover:border-white/40 hover:text-white"
         >
-          ← STORE
+          ← Store
         </button>
 
-        <div style={{ textAlign: 'center', marginBottom: 16 }}>
-          <p style={{ fontSize: 20, color: HL, marginBottom: 4 }}>{fmt(credits)}</p>
-          <p style={{ fontSize: 8, color: '#bcbcbc' }}>CREDITS</p>
-          <p style={{ fontSize: 7, color: '#555', marginTop: 4 }}>
-            {fmt(cps)}/SEC &nbsp;·&nbsp; {fmt(clickMult)}/CLICK
+        <div className="mb-4 text-center">
+          <p className="mb-1 text-3xl font-bold" style={{ color: HL }}>{fmt(credits)}</p>
+          <p className="text-sm text-white/50">Credits</p>
+          <p className="mt-1 text-xs text-white/30">
+            {fmt(cps)}/sec &nbsp;·&nbsp; {fmt(clickMult)}/click
           </p>
         </div>
 
-        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, minWidth: 200 }}>
-            <div style={{ position: 'relative', width: 180, height: 180 }}>
+        <div className="flex flex-wrap justify-center gap-3">
+          <div className="flex flex-col items-center gap-3" style={{ minWidth: 200 }}>
+            <div className="relative" style={{ width: 180, height: 180 }}>
               <button
                 onClick={handleClick}
+                className="flex h-full w-full flex-col items-center justify-center gap-2 rounded-xl"
                 style={{
-                  width: '100%', height: '100%', background: '#0a0a0a', border: `4px solid ${HL}`,
-                  cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  flexDirection: 'column', gap: 6,
+                  background: '#0a0a0a', border: `2px solid ${HL}`,
                   transform: clicking ? 'scale(0.93)' : 'scale(1)', transition: 'transform 0.06s',
                   boxShadow: clicking ? `0 0 20px ${HL}` : '0 0 8px #333',
                 }}
               >
                 <div style={{ fontSize: 64, lineHeight: 1, filter: clicking ? 'brightness(1.4)' : 'brightness(1)' }}>🎮</div>
-                <p style={{ fontSize: 7, color: HL, margin: 0 }}>CLICK!</p>
+                <p className="text-sm font-semibold" style={{ color: HL }}>Click!</p>
               </button>
 
               {floaters.map((f) => (
                 <div
                   key={f.id}
-                  style={{
-                    position: 'absolute', left: f.x, top: f.y, color: HL, fontSize: 9,
-                    fontFamily: 'var(--font-nes), monospace', pointerEvents: 'none',
-                    animation: 'floatUp 0.9s ease-out forwards', whiteSpace: 'nowrap',
-                  }}
+                  className="pointer-events-none absolute text-sm font-semibold whitespace-nowrap"
+                  style={{ left: f.x, top: f.y, color: HL, animation: 'floatUp 0.9s ease-out forwards' }}
                 >
                   +{fmt(f.val)}
                 </div>
               ))}
             </div>
 
-            <div style={{ width: '100%', border: '3px solid #222', background: '#0a0a0a' }}>
-              <div style={{ background: '#111', borderBottom: '3px solid #222', padding: '6px 10px' }}>
-                <p style={{ fontSize: 7, color: '#555' }}>UPGRADES</p>
+            <div className="w-full rounded-lg border border-white/10 bg-white/[0.03] overflow-hidden">
+              <div className="border-b border-white/10 bg-white/5 px-3 py-2">
+                <p className="text-xs font-semibold text-white/50">Upgrades</p>
               </div>
               {availableUpgrades.length === 0 ? (
-                <p style={{ fontSize: 6, color: '#333', padding: '8px 10px' }}>EARN MORE TO UNLOCK</p>
+                <p className="px-3 py-3 text-xs text-white/30">Earn more to unlock</p>
               ) : (
                 availableUpgrades.map((u) => {
                   const canBuy = credits >= u.cost;
@@ -245,18 +241,17 @@ export function ConsoleClicker({ onExit, paused }: { onExit: () => void; paused:
                       key={u.id}
                       onClick={() => buyUpgrade(u.id)}
                       disabled={!canBuy}
+                      className="flex w-full items-center gap-2 border-b border-white/5 px-3 py-2 text-left"
                       style={{
-                        display: 'flex', width: '100%', padding: '6px 10px',
-                        background: canBuy ? '#111' : '#0a0a0a', border: 'none',
-                        borderBottom: '2px solid #1a1a1a', cursor: canBuy ? 'pointer' : 'not-allowed',
-                        textAlign: 'left', gap: 8, alignItems: 'center',
+                        background: canBuy ? 'rgba(255,255,255,0.04)' : 'transparent',
+                        cursor: canBuy ? 'pointer' : 'not-allowed',
                       }}
                     >
-                      <div style={{ flex: 1 }}>
-                        <p style={{ fontSize: 7, color: canBuy ? '#fcfcfc' : '#444', margin: 0 }}>{u.name}</p>
-                        <p style={{ fontSize: 6, color: '#555', margin: 0 }}>{u.desc}</p>
+                      <div className="flex-1">
+                        <p className={`text-sm ${canBuy ? 'text-white' : 'text-white/30'}`}>{u.name}</p>
+                        <p className="text-xs text-white/40">{u.desc}</p>
                       </div>
-                      <p style={{ fontSize: 7, color: canBuy ? HL : '#444', margin: 0, whiteSpace: 'nowrap' }}>{fmt(u.cost)}</p>
+                      <p className="whitespace-nowrap text-sm font-medium" style={{ color: canBuy ? HL : 'rgba(255,255,255,0.3)' }}>{fmt(u.cost)}</p>
                     </button>
                   );
                 })
@@ -265,16 +260,16 @@ export function ConsoleClicker({ onExit, paused }: { onExit: () => void; paused:
 
             <button
               onClick={resetGame}
-              style={{ fontSize: 6, color: '#333', background: 'none', border: '2px solid #222', padding: '4px 10px', cursor: 'pointer', fontFamily: 'var(--font-nes), monospace' }}
+              className="rounded-md border border-white/10 px-3 py-1.5 text-xs text-white/40 hover:border-white/30 hover:text-white/70"
             >
-              RESET
+              Reset
             </button>
           </div>
 
-          <div style={{ flex: 1, minWidth: 260, border: '3px solid #222', background: '#0a0a0a' }}>
-            <div style={{ background: '#111', borderBottom: '3px solid #222', padding: '6px 10px', display: 'flex', justifyContent: 'space-between' }}>
-              <p style={{ fontSize: 7, color: '#555' }}>HARDWARE</p>
-              <p style={{ fontSize: 7, color: '#555' }}>{fmt(cps)}/SEC</p>
+          <div className="rounded-lg border border-white/10 bg-white/[0.03] overflow-hidden" style={{ flex: 1, minWidth: 260 }}>
+            <div className="flex items-center justify-between border-b border-white/10 bg-white/5 px-3 py-2">
+              <p className="text-xs font-semibold text-white/50">Hardware</p>
+              <p className="text-xs text-white/50">{fmt(cps)}/sec</p>
             </div>
 
             {buildings.map((b, i) => {
@@ -286,30 +281,31 @@ export function ConsoleClicker({ onExit, paused }: { onExit: () => void; paused:
               return (
                 <div
                   key={b.id}
+                  className="flex items-center gap-3 border-b border-white/5 px-3 py-2"
                   style={{
-                    display: 'flex', alignItems: 'center', padding: '8px 10px', borderBottom: '2px solid #111',
-                    background: b.count > 0 ? '#0d0d0d' : '#0a0a0a', gap: 10,
+                    background: b.count > 0 ? 'rgba(255,255,255,0.03)' : 'transparent',
                     opacity: b.count === 0 && !can1 && totalEarned < b.baseCost * 0.5 ? 0.3 : 1,
                   }}
                 >
-                  <span style={{ fontSize: 20, minWidth: 28, textAlign: 'center' }}>{b.icon}</span>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ fontSize: 7, color: b.count > 0 ? '#fcfcfc' : '#555', margin: 0 }}>{b.name}</p>
-                    <p style={{ fontSize: 6, color: '#444', margin: 0 }}>
+                  <span className="text-xl" style={{ minWidth: 28, textAlign: 'center' }}>{b.icon}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className={`text-sm ${b.count > 0 ? 'text-white' : 'text-white/40'}`}>{b.name}</p>
+                    <p className="text-xs text-white/30">
                       {fmt(cpsEach)}/sec each{b.count > 0 ? ` · total: ${fmt(cpsEach * b.count)}/sec` : ''}
                     </p>
                   </div>
-                  <div style={{ minWidth: 28, textAlign: 'center', background: b.count > 0 ? b.color : '#1a1a1a', padding: '2px 4px' }}>
-                    <p style={{ fontSize: 8, color: b.count > 0 ? '#000' : '#333', margin: 0 }}>{b.count}</p>
+                  <div className="rounded px-1.5 py-0.5 text-center text-xs font-semibold" style={{ minWidth: 28, background: b.count > 0 ? b.color : 'rgba(255,255,255,0.08)', color: b.count > 0 ? '#000' : 'rgba(255,255,255,0.3)' }}>
+                    {b.count}
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                  <div className="flex flex-col gap-1">
                     <button
                       onClick={() => buyBuilding(i, 1)}
                       disabled={!can1}
+                      className="whitespace-nowrap rounded px-2 py-1 text-xs font-medium"
                       style={{
-                        fontSize: 6, padding: '3px 6px', background: can1 ? b.color : '#111',
-                        color: can1 ? '#000' : '#333', border: `2px solid ${can1 ? b.color : '#222'}`,
-                        cursor: can1 ? 'pointer' : 'not-allowed', fontFamily: 'var(--font-nes), monospace', whiteSpace: 'nowrap',
+                        background: can1 ? b.color : 'rgba(255,255,255,0.05)',
+                        color: can1 ? '#000' : 'rgba(255,255,255,0.3)',
+                        cursor: can1 ? 'pointer' : 'not-allowed',
                       }}
                     >
                       {fmt(cost1)}
@@ -317,10 +313,12 @@ export function ConsoleClicker({ onExit, paused }: { onExit: () => void; paused:
                     <button
                       onClick={() => buyBuilding(i, 10)}
                       disabled={!can10}
+                      className="whitespace-nowrap rounded border px-2 py-1 text-xs font-medium"
                       style={{
-                        fontSize: 6, padding: '3px 6px', background: can10 ? '#222' : '#0a0a0a',
-                        color: can10 ? HL : '#333', border: `2px solid ${can10 ? '#444' : '#1a1a1a'}`,
-                        cursor: can10 ? 'pointer' : 'not-allowed', fontFamily: 'var(--font-nes), monospace', whiteSpace: 'nowrap',
+                        background: can10 ? 'rgba(255,255,255,0.06)' : 'transparent',
+                        borderColor: can10 ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.08)',
+                        color: can10 ? HL : 'rgba(255,255,255,0.3)',
+                        cursor: can10 ? 'pointer' : 'not-allowed',
                       }}
                     >
                       ×10 {fmt(cost10)}

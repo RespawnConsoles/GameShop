@@ -6,31 +6,27 @@ interface PauseMenuProps {
 export function PauseMenu({ onResume, onExit }: PauseMenuProps) {
   return (
     <div
-      className="retro-game fixed inset-0 z-50 flex items-center justify-center"
+      className="fixed inset-0 z-50 flex items-center justify-center"
       style={{ background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(2px)' }}
     >
-      <div
-        className="flex flex-col items-center gap-6 px-12 py-10"
-        style={{ border: '4px solid #fcfcfc', background: '#0a0a0a', fontFamily: 'var(--font-nes), monospace' }}
-      >
-        <p className="text-[16px] tracking-widest" style={{ color: '#f8b800' }}>PAUSED</p>
+      <div className="flex flex-col items-center gap-6 rounded-xl border border-white/10 bg-[#0a0a0a] px-12 py-10">
+        <p className="text-xl font-semibold tracking-wide text-white">Paused</p>
         <div className="flex flex-col gap-3">
           <button
             onClick={onResume}
             autoFocus
-            className="px-6 py-2.5 text-[10px] text-black hover:opacity-90"
-            style={{ background: '#f8b800' }}
+            className="rounded-md bg-emerald-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-emerald-500"
           >
-            ▶ RESUME
+            ▶ Resume
           </button>
           <button
             onClick={onExit}
-            className="px-6 py-2.5 text-[10px] text-white border-2 border-white/40 hover:border-white hover:bg-white/5"
+            className="rounded-md border border-white/20 px-6 py-2.5 text-sm text-white/80 hover:border-white/40 hover:bg-white/5"
           >
-            ■ EXIT TO STORE
+            ■ Exit to Store
           </button>
         </div>
-        <p className="text-[7px] text-white/30">PRESS ESC TO RESUME</p>
+        <p className="text-xs text-white/30">Press Esc to resume</p>
       </div>
     </div>
   );

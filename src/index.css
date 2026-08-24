@@ -1,17 +1,5 @@
 @import "tailwindcss";
 
-@font-face {
-  font-family: 'Press Start 2P';
-  src: url('./assets/fonts/press-start-2p.woff2') format('woff2');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
-.retro-game {
-  --font-nes: 'Press Start 2P', monospace;
-}
-
 :root {
   color-scheme: dark;
 }
