@@ -7,9 +7,10 @@ interface GameDetailModalProps {
   game: CatalogGame;
   onClose: () => void;
   onPurchased: (name: string) => void;
+  onPlay: (id: string) => void;
 }
 
-export function GameDetailModal({ game, onClose, onPurchased }: GameDetailModalProps) {
+export function GameDetailModal({ game, onClose, onPurchased, onPlay }: GameDetailModalProps) {
   const { owns, isWishlisted, toggleWishlist, buy } = useStore();
   const [error, setError] = useState<string | null>(null);
 
@@ -75,9 +76,12 @@ export function GameDetailModal({ game, onClose, onPurchased }: GameDetailModalP
 
           <div className="flex items-center gap-3 border-t border-white/10 pt-4">
             {owned ? (
-              <span className="rounded-md bg-emerald-600/20 px-4 py-2 text-sm font-medium text-emerald-400">
-                In your library
-              </span>
+              <button
+                onClick={() => onPlay(game.id)}
+                className="rounded-md bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-500"
+              >
+                ▶ Play
+              </button>
             ) : (
               <button
                 onClick={handleBuy}

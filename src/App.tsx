@@ -4,6 +4,7 @@ import type { CatalogGame } from './lib/catalog';
 import { Sidebar, type View } from './components/Sidebar';
 import { TopBar } from './components/TopBar';
 import { GameDetailModal } from './components/GameDetailModal';
+import { PlayView } from './components/PlayView';
 import { Toast } from './components/Toast';
 import { StorePage } from './pages/StorePage';
 import { LibraryPage } from './pages/LibraryPage';
@@ -13,6 +14,7 @@ export default function App() {
   const [view, setView] = useState<View>('store');
   const [search, setSearch] = useState('');
   const [activeGame, setActiveGame] = useState<CatalogGame | null>(null);
+  const [playingId, setPlayingId] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
 
   const showToast = (message: string) => {
@@ -27,7 +29,7 @@ export default function App() {
         <div className="flex flex-1 overflow-hidden">
           <Sidebar view={view} onChange={setView} />
           {view === 'store' && <StorePage search={search} onOpen={setActiveGame} />}
-          {view === 'library' && <LibraryPage />}
+          {view === 'library' && <LibraryPage onPlay={setPlayingId} />}
           {view === 'wishlist' && <WishlistPage />}
         </div>
       </div>
@@ -38,10 +40,15 @@ export default function App() {
           onClose={() => setActiveGame(null)}
           onPurchased={(name) => {
             showToast(`Purchased ${name}!`);
+          }}
+          onPlay={(id) => {
             setActiveGame(null);
+            setPlayingId(id);
           }}
         />
       )}
+
+      {playingId && <PlayView gameId={playingId} onExit={() => setPlayingId(null)} />}
 
       {toast && <Toast message={toast} />}
     </StoreProvider>
