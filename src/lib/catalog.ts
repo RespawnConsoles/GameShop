@@ -3,6 +3,7 @@ import powerSurge from '../assets/games/powersurge.svg';
 import consoleClicker from '../assets/games/consoleclicker.svg';
 import splitValley from '../assets/games/splitvalley.svg';
 import dungeonArchitect from '../assets/games/dungeonarchitect.svg';
+import mazeDash from '../assets/games/mazedash.svg';
 import game2048 from '../assets/games/2048.svg';
 import gameTetris from '../assets/games/tetris.svg';
 
@@ -51,6 +52,17 @@ export const CATALOG: CatalogGame[] = [
     maker: 'Respawn Studios',
     color: '#d82800',
     image: consoleClicker,
+    price: 0,
+  },
+  {
+    id: 'maze-dash',
+    title: 'MAZE DASH',
+    description: 'Race a randomly generated maze to the exit, grabbing coins along the way. Six levels, each bigger than the last.',
+    genre: 'Arcade',
+    group: 'Classics',
+    maker: 'Respawn Studios',
+    color: '#60a5fa',
+    image: mazeDash,
     price: 0,
   },
   {
