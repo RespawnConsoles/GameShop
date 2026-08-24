@@ -59,8 +59,10 @@ function loadSave(): { credits: number; buildings: Building[]; upgrades: Upgrade
 
 let _fid = 0;
 
-export function ConsoleClicker({ onExit }: { onExit: () => void }) {
+export function ConsoleClicker({ onExit, paused }: { onExit: () => void; paused: boolean }) {
   const [credits, setCredits] = useState(0);
+  const pausedRef = useRef(paused);
+  useEffect(() => { pausedRef.current = paused; }, [paused]);
   const [buildings, setBuildings] = useState<Building[]>(() => BASE_BUILDINGS.map((b) => ({ ...b, count: 0 })));
   const [upgrades, setUpgrades] = useState<Upgrade[]>(BASE_UPGRADES);
   const [floaters, setFloaters] = useState<Floater[]>([]);
@@ -99,6 +101,7 @@ export function ConsoleClicker({ onExit }: { onExit: () => void }) {
 
   useEffect(() => {
     const id = setInterval(() => {
+      if (pausedRef.current) return;
       const cps = totalCps(buildingsRef.current);
       const gain = cps / 20;
       creditsRef.current += gain;

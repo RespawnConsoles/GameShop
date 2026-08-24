@@ -98,9 +98,11 @@ function NameEntry({ onSubmit }: { onSubmit: (name: string) => void }) {
   );
 }
 
-export function ConsoleDrop({ onExit }: { onExit: () => void }) {
+export function ConsoleDrop({ onExit, paused }: { onExit: () => void; paused: boolean }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rafRef = useRef<number>(0);
+  const pausedRef = useRef(paused);
+  useEffect(() => { pausedRef.current = paused; }, [paused]);
 
   const g = useRef({
     paddleX: W / 2 - PADDLE_W / 2,
@@ -186,6 +188,10 @@ export function ConsoleDrop({ onExit }: { onExit: () => void }) {
   const loop = useCallback(() => {
     const s = g.current;
     if (s.over) return;
+    if (pausedRef.current) {
+      rafRef.current = requestAnimationFrame(loop);
+      return;
+    }
 
     if (s.keys.left && s.paddleX > 0) s.paddleX -= PADDLE_SPEED;
     if (s.keys.right && s.paddleX < W - PADDLE_W) s.paddleX += PADDLE_SPEED;

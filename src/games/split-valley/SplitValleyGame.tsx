@@ -68,7 +68,7 @@ function isTeamStuck(team: 'eagles' | 'rattlers', state: GameState): boolean {
 
 const teamLabel = (team: string) => team === 'eagles' ? '🦅 Eagles' : '🐍 Rattlers';
 
-export function SplitValleyGame({ onExit }: { onExit: () => void }) {
+export function SplitValleyGame({ onExit }: { onExit: () => void; paused: boolean }) {
   const [state, setState] = useState<GameState>(() => makeInitialState());
   const [phase, setPhase] = useState<Phase>('roll');
   const [diceRolled, setDiceRolled] = useState(false);

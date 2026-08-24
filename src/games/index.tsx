@@ -7,6 +7,7 @@ import { SplitValleyGame } from './split-valley/SplitValleyGame';
 
 export interface PlayableGameProps {
   onExit: () => void;
+  paused: boolean;
 }
 
 export const PLAYABLE_GAMES: Record<string, ComponentType<PlayableGameProps>> = {

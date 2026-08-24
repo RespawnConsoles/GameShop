@@ -87,8 +87,10 @@ function nes(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, 
   ctx.textAlign = 'left';
 }
 
-export function PowerSurge({ onExit }: { onExit: () => void }) {
+export function PowerSurge({ onExit, paused }: { onExit: () => void; paused: boolean }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const pausedRef = useRef(paused);
+  useEffect(() => { pausedRef.current = paused; }, [paused]);
   const s = useRef({
     player: { x: W / 2 - 16, y: H - 68 },
     bullets: [] as Bullet[],
@@ -171,6 +173,10 @@ export function PowerSurge({ onExit }: { onExit: () => void }) {
 
     const loop = (time: number) => {
       const g = s.current;
+      if (pausedRef.current) {
+        raf = requestAnimationFrame(loop);
+        return;
+      }
       ctx.fillStyle = '#000';
       ctx.fillRect(0, 0, W, H);
 

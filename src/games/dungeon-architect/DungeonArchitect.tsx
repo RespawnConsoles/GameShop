@@ -282,7 +282,7 @@ function clearSave() {
 
 const CELL_PX = 58;
 
-export function DungeonArchitect({ onExit }: { onExit: () => void }) {
+export function DungeonArchitect({ onExit, paused }: { onExit: () => void; paused: boolean }) {
   const [save] = useState(loadSave);
   const [levelIdx, setLevelIdx] = useState(save?.levelIdx ?? 0);
   const [grid, setGrid] = useState<Grid>(makeGrid);
@@ -373,6 +373,7 @@ export function DungeonArchitect({ onExit }: { onExit: () => void }) {
 
   useEffect(() => {
     if (phase !== 'running') return;
+    if (paused) return;
     if (simIdx >= simSteps.length) {
       const last = simSteps[simSteps.length - 1];
       const died = !last || last.hp <= 0;
@@ -393,7 +394,7 @@ export function DungeonArchitect({ onExit }: { onExit: () => void }) {
     const delay = step.event ? 380 : 130;
     const t = setTimeout(() => setSimIdx(i => i + 1), delay);
     return () => clearTimeout(t);
-  }, [phase, simIdx, simSteps, cfg.heroHP]);
+  }, [phase, simIdx, simSteps, cfg.heroHP, paused]);
 
   const heroStep = simIdx > 0 ? simSteps[Math.min(simIdx - 1, simSteps.length - 1)] : null;
 
