@@ -1,0 +1,52 @@
+{
+  "name": "gameshop",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "main": "electron/main.cjs",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "oxlint",
+    "preview": "vite preview",
+    "electron": "concurrently -k -n VITE,ELECTRON -c green,blue \"cross-env BROWSER=none vite\" \"wait-on tcp:5173 && electron .\"",
+    "dist:mac": "npm run build && electron-builder --mac --arm64 --dir",
+    "release:mac": "npm run build && electron-builder --mac --arm64"
+  },
+  "build": {
+    "appId": "com.gameshop.app",
+    "productName": "GameShop",
+    "files": [
+      "dist/**/*",
+      "electron/**/*"
+    ],
+    "directories": {
+      "output": "release"
+    },
+    "mac": {
+      "category": "public.app-category.games",
+      "target": "dmg"
+    }
+  },
+  "dependencies": {
+    "lucide-react": "^1.33.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/node": "^24.13.3",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.4",
+    "concurrently": "^10.0.5",
+    "cross-env": "^10.1.0",
+    "electron": "^43.4.1",
+    "electron-builder": "^26.15.3",
+    "oxlint": "^1.75.0",
+    "tailwindcss": "^4.3.3",
+    "typescript": "~6.0.2",
+    "vite": "^8.2.0",
+    "wait-on": "^9.1.0"
+  }
+}
