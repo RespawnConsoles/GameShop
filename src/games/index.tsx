@@ -4,6 +4,7 @@ import { PowerSurge } from './power-surge/PowerSurge';
 import { ConsoleClicker } from './console-clicker/ConsoleClicker';
 import { DungeonArchitect } from './dungeon-architect/DungeonArchitect';
 import { SplitValleyGame } from './split-valley/SplitValleyGame';
+import { IframeGame } from './IframeGame';
 
 export interface PlayableGameProps {
   onExit: () => void;
@@ -16,4 +17,6 @@ export const PLAYABLE_GAMES: Record<string, ComponentType<PlayableGameProps>> = 
   'console-clicker': ConsoleClicker,
   'dungeon-architect': DungeonArchitect,
   'split-valley': SplitValleyGame,
+  'game-2048': (props) => <IframeGame src="oss-games/2048/index.html" onExit={props.onExit} />,
+  'game-tetris': (props) => <IframeGame src="oss-games/tetris/index.html" onExit={props.onExit} />,
 };

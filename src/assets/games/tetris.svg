@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="460" height="215" viewBox="0 0 460 215">
+  <rect width="460" height="215" fill="#0f172a"/>
+  <g>
+    <rect x="140" y="40" width="20" height="20" fill="#38bdf8"/>
+    <rect x="160" y="40" width="20" height="20" fill="#38bdf8"/>
+    <rect x="180" y="40" width="20" height="20" fill="#38bdf8"/>
+    <rect x="200" y="40" width="20" height="20" fill="#38bdf8"/>
+
+    <rect x="240" y="70" width="20" height="20" fill="#facc15"/>
+    <rect x="260" y="70" width="20" height="20" fill="#facc15"/>
+    <rect x="240" y="90" width="20" height="20" fill="#facc15"/>
+    <rect x="260" y="90" width="20" height="20" fill="#facc15"/>
+
+    <rect x="140" y="120" width="20" height="20" fill="#a78bfa"/>
+    <rect x="160" y="100" width="20" height="20" fill="#a78bfa"/>
+    <rect x="160" y="120" width="20" height="20" fill="#a78bfa"/>
+    <rect x="180" y="120" width="20" height="20" fill="#a78bfa"/>
+
+    <rect x="280" y="120" width="20" height="20" fill="#4ade80"/>
+    <rect x="300" y="120" width="20" height="20" fill="#4ade80"/>
+    <rect x="260" y="140" width="20" height="20" fill="#4ade80"/>
+    <rect x="280" y="140" width="20" height="20" fill="#4ade80"/>
+  </g>
+  <text x="230" y="185" font-family="Arial, sans-serif" font-size="22" font-weight="bold" letter-spacing="6" text-anchor="middle" fill="#e2e8f0">TETRIS</text>
+</svg>

@@ -3,6 +3,8 @@ import powerSurge from '../assets/games/powersurge.svg';
 import consoleClicker from '../assets/games/consoleclicker.svg';
 import splitValley from '../assets/games/splitvalley.svg';
 import dungeonArchitect from '../assets/games/dungeonarchitect.svg';
+import game2048 from '../assets/games/2048.svg';
+import gameTetris from '../assets/games/tetris.svg';
 
 export interface CatalogGame {
   id: string;
@@ -72,5 +74,27 @@ export const CATALOG: CatalogGame[] = [
     color: '#c084fc',
     image: dungeonArchitect,
     price: 0.99,
+  },
+  {
+    id: 'game-2048',
+    title: '2048',
+    description: 'Slide numbered tiles to combine matching pairs. Reach the 2048 tile to win — keep going for a higher score after that.',
+    genre: 'Puzzle',
+    group: 'Open Source',
+    maker: 'Gabriele Cirulli (MIT License)',
+    color: '#f2b179',
+    image: game2048,
+    price: 0,
+  },
+  {
+    id: 'game-tetris',
+    title: 'TETRIS',
+    description: 'The classic falling-block puzzle. Clear lines by filling every gap across a row before the stack reaches the top.',
+    genre: 'Puzzle',
+    group: 'Open Source',
+    maker: 'Jake Gordon (MIT License)',
+    color: '#38bdf8',
+    image: gameTetris,
+    price: 0,
   },
 ];
