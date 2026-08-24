@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" shape-rendering="crispEdges">
+  <!-- Background -->
+  <rect width="200" height="200" fill="#0a0a0a"/>
+
+  <!-- Red border corners -->
+  <rect x="0" y="0" width="200" height="5" fill="#d82800"/>
+  <rect x="0" y="195" width="200" height="5" fill="#d82800"/>
+  <rect x="0" y="0" width="5" height="200" fill="#d82800"/>
+  <rect x="195" y="0" width="5" height="200" fill="#d82800"/>
+
+  <!-- Controller body -->
+  <rect x="25" y="108" width="150" height="66" fill="#d82800"/>
+  <!-- Left grip -->
+  <rect x="25" y="140" width="36" height="34" fill="#a81e00"/>
+  <!-- Right grip -->
+  <rect x="139" y="140" width="36" height="34" fill="#a81e00"/>
+  <!-- Top highlight -->
+  <rect x="25" y="108" width="150" height="5" fill="#ee3314"/>
+
+  <!-- D-pad -->
+  <rect x="54" y="118" width="11" height="33" fill="#0a0a0a"/>
+  <rect x="43" y="129" width="33" height="11" fill="#0a0a0a"/>
+
+  <!-- Buttons -->
+  <rect x="131" y="116" width="13" height="13" fill="#f8b800"/>
+  <rect x="148" y="116" width="13" height="13" fill="#fcfcfc"/>
+  <rect x="131" y="133" width="13" height="13" fill="#00b800"/>
+  <rect x="148" y="133" width="13" height="13" fill="#0058f8"/>
+
+  <!-- Start / Select -->
+  <rect x="87" y="128" width="11" height="7" fill="#0a0a0a"/>
+  <rect x="102" y="128" width="11" height="7" fill="#0a0a0a"/>
+
+  <!-- Cursor arrow (top-left pointing, tip aimed at controller) -->
+  <rect x="76" y="18" width="8" height="56" fill="#fcfcfc"/>
+  <rect x="76" y="18" width="36" height="8" fill="#fcfcfc"/>
+  <rect x="84" y="26" width="8" height="8" fill="#fcfcfc"/>
+  <rect x="92" y="34" width="8" height="8" fill="#fcfcfc"/>
+  <rect x="100" y="42" width="8" height="8" fill="#fcfcfc"/>
+  <!-- Shadow outline on arrow -->
+  <rect x="74" y="74" width="4" height="4" fill="#d82800"/>
+  <rect x="112" y="50" width="4" height="4" fill="#d82800"/>
+
+  <!-- Click spark ring (gold pixels) -->
+  <rect x="112" y="20" width="6" height="6" fill="#f8b800"/>
+  <rect x="121" y="13" width="5" height="5" fill="#f8b800"/>
+  <rect x="130" y="8" width="4" height="4" fill="#f8b800"/>
+  <rect x="60" y="80" width="6" height="6" fill="#f8b800"/>
+  <rect x="52" y="88" width="5" height="5" fill="#f8b800"/>
+
+  <!-- Coin stacks (right side, gold) -->
+  <rect x="152" y="70" width="22" height="8" fill="#f8b800"/>
+  <rect x="154" y="62" width="18" height="8" fill="#f8b800"/>
+  <rect x="156" y="54" width="14" height="8" fill="#f8b800"/>
+  <rect x="158" y="46" width="10" height="8" fill="#f8b800"/>
+  <rect x="150" y="78" width="24" height="4" fill="#c48a00"/>
+  <rect x="152" y="70" width="22" height="2" fill="#ffe066"/>
+</svg>

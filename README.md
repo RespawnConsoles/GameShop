@@ -1,24 +1,16 @@
 # GameShop
 
-A native macOS app — a mini digital game marketplace/library. Browse real games (via the RAWG API), "buy" them with mock currency, and manage your library and wishlist. Everything is local: no real payments, no real downloads.
+A native macOS app — a mini digital game marketplace/library. Browse games, "buy" them with mock currency, and manage your library and wishlist. Fully self-contained: no API key, no internet connection, no setup step — everything is bundled into the app.
 
 ## Stack
 
 Electron + React + TypeScript + Tailwind CSS, packaged with electron-builder.
 
-## 1. Get a RAWG API key (free, ~30 seconds)
+## Catalog
 
-1. Go to https://rawg.io/apidocs
-2. Sign up / log in and copy your API key
-3. Open `.env` in this folder and replace the placeholder:
+The store ships with the games from the Respawn Consoles **RC Game Store**: Console Drop, Power Surge, Console Clicker, Split Valley, and Dungeon Architect. Cover art and game data are bundled directly into the app (`src/lib/catalog.ts`, `src/assets/games/`) — nothing is fetched at runtime.
 
-   ```
-   VITE_RAWG_API_KEY=your_actual_key_here
-   ```
-
-Until you do this, the Store tab shows a "get an API key" screen instead of games — Library and Wishlist work regardless since they're local.
-
-## 2. Run it in dev mode
+## 1. Run it in dev mode
 
 ```
 npm run electron
@@ -26,18 +18,22 @@ npm run electron
 
 This starts the Vite dev server and opens the app window, with hot reload.
 
-## 3. Build the real Mac app (goes in Applications / Dock)
+## 2. Build the real Mac app (goes in Applications / Dock)
 
 ```
 npm run release:mac
 ```
 
-This produces a `.dmg` installer in `release/`. Open it, drag **GameShop** into Applications, then launch it from Launchpad/Applications and drag it to the Dock like any other app.
+This produces a `.dmg` installer in `release/`. Open it, drag **GameShop** into Applications, then launch it from Launchpad/Applications and drag it to the Dock like any other app. Once built, the app needs nothing else installed to run — no Node, no npm, no network.
 
 (`npm run dist:mac` builds an unpacked `.app` directly in `release/mac-arm64/` if you just want to test the packaged build without a `.dmg`.)
 
 ## How it works
 
-- **Store** — browse/search/filter games pulled live from RAWG. Prices are deterministically generated per game (same game always costs the same amount) — there's no real store backend.
+- **Store** — browse/filter the bundled game catalog.
 - **Buy** — deducts from a mock wallet (starts at $500, "Add funds" gives +$100 anytime) and adds the game to your local library. No real money or downloads are involved.
 - **Library / Wishlist** — persisted to a JSON file in the app's local data directory (`~/Library/Application Support/gameshop/gameshop-store.json`), so it survives restarts.
+
+## Adding more games to the catalog
+
+Add an entry to the `CATALOG` array in `src/lib/catalog.ts`, with a cover image imported from `src/assets/games/`.

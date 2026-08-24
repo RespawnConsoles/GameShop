@@ -10,8 +10,8 @@ interface BuyResult {
 
 interface StoreContextValue extends StoreState {
   loading: boolean;
-  owns: (id: number) => boolean;
-  isWishlisted: (id: number) => boolean;
+  owns: (id: string) => boolean;
+  isWishlisted: (id: string) => boolean;
   buy: (entry: LibraryEntry) => BuyResult;
   toggleWishlist: (entry: WishlistEntry) => void;
   addFunds: (amount: number) => void;
@@ -35,8 +35,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     void window.gameshop.setStore(next);
   }, []);
 
-  const owns = useCallback((id: number) => state.library.some((g) => g.id === id), [state.library]);
-  const isWishlisted = useCallback((id: number) => state.wishlist.some((w) => w.id === id), [state.wishlist]);
+  const owns = useCallback((id: string) => state.library.some((g) => g.id === id), [state.library]);
+  const isWishlisted = useCallback((id: string) => state.wishlist.some((w) => w.id === id), [state.wishlist]);
 
   const buy = useCallback(
     (entry: LibraryEntry): BuyResult => {

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { StoreProvider } from './lib/store';
-import type { RawgGame } from './lib/types';
+import type { CatalogGame } from './lib/catalog';
 import { Sidebar, type View } from './components/Sidebar';
 import { TopBar } from './components/TopBar';
 import { GameDetailModal } from './components/GameDetailModal';
@@ -12,7 +12,7 @@ import { WishlistPage } from './pages/WishlistPage';
 export default function App() {
   const [view, setView] = useState<View>('store');
   const [search, setSearch] = useState('');
-  const [activeGame, setActiveGame] = useState<RawgGame | null>(null);
+  const [activeGame, setActiveGame] = useState<CatalogGame | null>(null);
   const [toast, setToast] = useState<string | null>(null);
 
   const showToast = (message: string) => {
