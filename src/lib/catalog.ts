@@ -13,6 +13,7 @@ export interface CatalogGame {
   maker: string;
   color: string;
   image: string;
+  price: number;
 }
 
 /** Bundled with the app — pulled from the Respawn Consoles RC Game Store. No network needed. */
@@ -26,6 +27,7 @@ export const CATALOG: CatalogGame[] = [
     maker: 'Respawn Studios',
     color: '#00b800',
     image: consoleDrop,
+    price: 0,
   },
   {
     id: 'power-surge',
@@ -36,6 +38,7 @@ export const CATALOG: CatalogGame[] = [
     maker: 'Respawn Studios',
     color: '#f8b800',
     image: powerSurge,
+    price: 0,
   },
   {
     id: 'console-clicker',
@@ -46,6 +49,7 @@ export const CATALOG: CatalogGame[] = [
     maker: 'Respawn Studios',
     color: '#d82800',
     image: consoleClicker,
+    price: 0,
   },
   {
     id: 'split-valley',
@@ -56,6 +60,7 @@ export const CATALOG: CatalogGame[] = [
     maker: 'Respawn Studios × Anonymous Creator',
     color: '#7c3aed',
     image: splitValley,
+    price: 0.99,
   },
   {
     id: 'dungeon-architect',
@@ -66,5 +71,6 @@ export const CATALOG: CatalogGame[] = [
     maker: 'Respawn Studios',
     color: '#c084fc',
     image: dungeonArchitect,
+    price: 0.99,
   },
 ];

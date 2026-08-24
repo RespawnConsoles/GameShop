@@ -1,6 +1,5 @@
 import { Heart, Check } from 'lucide-react';
 import type { CatalogGame } from '../lib/catalog';
-import { mockPrice } from '../lib/pricing';
 import { useStore } from '../lib/store';
 
 interface GameCardProps {
@@ -10,7 +9,6 @@ interface GameCardProps {
 
 export function GameCard({ game, onOpen }: GameCardProps) {
   const { owns, isWishlisted, toggleWishlist } = useStore();
-  const price = mockPrice(game.id);
   const owned = owns(game.id);
   const wishlisted = isWishlisted(game.id);
 
@@ -47,7 +45,7 @@ export function GameCard({ game, onOpen }: GameCardProps) {
         <div className="mt-1 flex items-center justify-between">
           <span className="truncate text-xs text-white/40">{game.genre}</span>
           <span className="shrink-0 text-sm font-semibold text-emerald-400">
-            {owned ? '' : `$${price.toFixed(2)}`}
+            {owned ? '' : game.price === 0 ? 'FREE' : `$${game.price.toFixed(2)}`}
           </span>
         </div>
       </div>

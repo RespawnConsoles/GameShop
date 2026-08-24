@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Heart, X } from 'lucide-react';
 import type { CatalogGame } from '../lib/catalog';
-import { mockPrice } from '../lib/pricing';
 import { useStore } from '../lib/store';
 
 interface GameDetailModalProps {
@@ -14,7 +13,7 @@ export function GameDetailModal({ game, onClose, onPurchased }: GameDetailModalP
   const { owns, isWishlisted, toggleWishlist, buy } = useStore();
   const [error, setError] = useState<string | null>(null);
 
-  const price = mockPrice(game.id);
+  const price = game.price;
   const owned = owns(game.id);
   const wishlisted = isWishlisted(game.id);
 
@@ -84,7 +83,7 @@ export function GameDetailModal({ game, onClose, onPurchased }: GameDetailModalP
                 onClick={handleBuy}
                 className="rounded-md bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-500"
               >
-                Buy — ${price.toFixed(2)}
+                {price === 0 ? 'Get — FREE' : `Buy — $${price.toFixed(2)}`}
               </button>
             )}
             <button
