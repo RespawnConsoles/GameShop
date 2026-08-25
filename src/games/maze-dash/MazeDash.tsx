@@ -56,6 +56,38 @@ function generateMaze(cols: number, rows: number): Maze {
   return maze;
 }
 
+/** BFS from the start cell through open walls — confirms the exit is actually reachable. */
+function hasPathToExit(maze: Maze, cols: number, rows: number): boolean {
+  const visited = Array.from({ length: rows }, () => Array(cols).fill(false));
+  const queue: [number, number][] = [[0, 0]];
+  visited[0][0] = true;
+  while (queue.length) {
+    const [r, c] = queue.shift()!;
+    if (r === rows - 1 && c === cols - 1) return true;
+    const cell = maze[r][c];
+    for (const d of DIRS) {
+      if (cell[d.key]) continue;
+      const nr = r + d.dr;
+      const nc = c + d.dc;
+      if (nr < 0 || nr >= rows || nc < 0 || nc >= cols || visited[nr][nc]) continue;
+      visited[nr][nc] = true;
+      queue.push([nr, nc]);
+    }
+  }
+  return false;
+}
+
+/** Generates a fresh maze and verifies it's solvable before handing it back — regenerates if not. */
+function generateSolvableMaze(cols: number, rows: number): Maze {
+  for (let attempt = 0; attempt < 20; attempt++) {
+    const maze = generateMaze(cols, rows);
+    if (hasPathToExit(maze, cols, rows)) return maze;
+  }
+  // Should be unreachable — the recursive-backtracker always spans every cell —
+  // but never hand back an unsolvable maze under any circumstance.
+  throw new Error('Failed to generate a solvable maze');
+}
+
 function placeCoins(cols: number, rows: number, count: number): [number, number][] {
   const coins: [number, number][] = [];
   const taken = new Set(['0,0', `${rows - 1},${cols - 1}`]);
@@ -148,7 +180,7 @@ export function MazeDash({ onExit, paused }: { onExit: () => void; paused: boole
     rows: 0,
     player: { r: 0, c: 0 },
     coins: [] as [number, number][],
-    coinsCollected: 0,
+    collectedCoins: new Set<string>(),
     keys: {} as Record<string, boolean>,
     lastDir: null as null | 'top' | 'right' | 'bottom' | 'left',
     lastMove: 0,
@@ -159,13 +191,13 @@ export function MazeDash({ onExit, paused }: { onExit: () => void; paused: boole
 
   const setupLevel = useCallback((idx: number) => {
     const cfg = LEVELS[idx];
-    const maze = generateMaze(cfg.cols, cfg.rows);
+    const maze = generateSolvableMaze(cfg.cols, cfg.rows);
     g.current.maze = maze;
     g.current.cols = cfg.cols;
     g.current.rows = cfg.rows;
     g.current.player = { r: 0, c: 0 };
     g.current.coins = placeCoins(cfg.cols, cfg.rows, cfg.coins);
-    g.current.coinsCollected = 0;
+    g.current.collectedCoins = new Set();
     g.current.lastMove = 0;
     g.current.levelStart = performance.now();
     g.current.elapsed = 0;
@@ -175,15 +207,19 @@ export function MazeDash({ onExit, paused }: { onExit: () => void; paused: boole
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d')!;
-    const { maze, cols, rows, player, coins, coinsCollected } = g.current;
+    const { maze, cols, rows, player, coins, collectedCoins } = g.current;
     if (!maze.length) return;
 
     ctx.fillStyle = '#0a0a0d';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Exit tile
-    ctx.fillStyle = 'rgba(52, 211, 153, 0.18)';
+    // Exit tile — bright, pulsing highlight so it's unmistakable at any maze size
+    const pulse = 0.35 + 0.25 * Math.sin(performance.now() / 220);
+    ctx.fillStyle = `rgba(52, 211, 153, ${pulse})`;
     ctx.fillRect((cols - 1) * CELL, (rows - 1) * CELL, CELL, CELL);
+    ctx.strokeStyle = '#34d399';
+    ctx.lineWidth = 2;
+    ctx.strokeRect((cols - 1) * CELL + 1, (rows - 1) * CELL + 1, CELL - 2, CELL - 2);
 
     // Walls
     ctx.strokeStyle = '#3f3f4a';
@@ -204,8 +240,8 @@ export function MazeDash({ onExit, paused }: { onExit: () => void; paused: boole
     }
 
     // Coins
-    coins.forEach(([r, c], i) => {
-      if (i < coinsCollected) return;
+    coins.forEach(([r, c]) => {
+      if (collectedCoins.has(`${r},${c}`)) return;
       ctx.fillStyle = '#f8b800';
       ctx.beginPath();
       ctx.arc(c * CELL + CELL / 2, r * CELL + CELL / 2, 4.5, 0, Math.PI * 2);
@@ -213,8 +249,8 @@ export function MazeDash({ onExit, paused }: { onExit: () => void; paused: boole
     });
 
     // Exit glyph
-    ctx.fillStyle = '#34d399';
-    ctx.font = '600 14px system-ui, sans-serif';
+    ctx.fillStyle = '#0a0a0d';
+    ctx.font = '700 18px system-ui, sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText('★', (cols - 1) * CELL + CELL / 2, (rows - 1) * CELL + CELL / 2);
@@ -231,7 +267,7 @@ export function MazeDash({ onExit, paused }: { onExit: () => void; paused: boole
   const finishLevel = useCallback(() => {
     const s = g.current;
     const timeSec = s.elapsed / 1000;
-    const levelScore = Math.max(100, Math.round(600 - timeSec * 4)) + s.coinsCollected * 50;
+    const levelScore = Math.max(100, Math.round(600 - timeSec * 4)) + s.collectedCoins.size * 50;
     setScore((prev) => {
       const total = prev + levelScore;
       if (levelIdx + 1 >= LEVELS.length) {
@@ -264,8 +300,10 @@ export function MazeDash({ onExit, paused }: { onExit: () => void; paused: boole
           s.player = { r: s.player.r + move.dr, c: s.player.c + move.dc };
           s.lastMove = now;
 
-          const coinIdx = s.coins.findIndex(([r, c], i) => i >= s.coinsCollected && r === s.player.r && c === s.player.c);
-          if (coinIdx === s.coinsCollected) s.coinsCollected++;
+          const posKey = `${s.player.r},${s.player.c}`;
+          if (!s.collectedCoins.has(posKey) && s.coins.some(([r, c]) => r === s.player.r && c === s.player.c)) {
+            s.collectedCoins.add(posKey);
+          }
 
           if (s.player.r === s.rows - 1 && s.player.c === s.cols - 1) {
             finishLevel();
@@ -276,7 +314,7 @@ export function MazeDash({ onExit, paused }: { onExit: () => void; paused: boole
 
     draw();
     setElapsedMs(s.elapsed);
-    setCoinsCollected(s.coinsCollected);
+    setCoinsCollected(s.collectedCoins.size);
     rafRef.current = requestAnimationFrame(loop);
   }, [draw, finishLevel]);
 
@@ -345,8 +383,8 @@ export function MazeDash({ onExit, paused }: { onExit: () => void; paused: boole
   const canvasH = cfg.rows * CELL;
 
   return (
-    <div className="flex flex-col items-center gap-4 py-8 px-4 overflow-y-auto bg-black text-white" style={{ minHeight: '100%' }}>
-      <div className="w-full max-w-[700px] flex items-center justify-between">
+    <div className="flex flex-col items-center gap-4 py-8 px-4 overflow-auto bg-black text-white" style={{ minHeight: '100%' }}>
+      <div className="w-full max-w-[900px] flex items-center justify-between">
         <button onClick={onExit} className="rounded-md border border-white/20 px-3 py-1.5 text-sm text-white/70 hover:border-white/40 hover:text-white">
           ← Store
         </button>
@@ -360,7 +398,7 @@ export function MazeDash({ onExit, paused }: { onExit: () => void; paused: boole
         )}
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-4 items-center lg:items-start w-full max-w-[700px] justify-center">
+      <div className="flex flex-col lg:flex-row gap-4 items-center lg:items-start w-full max-w-[900px] justify-center">
         {phase !== 'title' && (
           <div className="hidden lg:flex flex-col gap-4 w-[170px] shrink-0">
             <Leaderboard scores={scores} />

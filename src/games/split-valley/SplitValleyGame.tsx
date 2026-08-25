@@ -20,6 +20,33 @@ type Phase = 'roll' | 'build';
 const WIN_VP = 15;
 const mode: 'bot' = 'bot';
 
+const SAVE_KEY = 'splitvalley-save-v1';
+
+interface SavedGame {
+  state: GameState;
+  phase: Phase;
+  diceRolled: boolean;
+  log: string[];
+  lastRaidTurn: number | null;
+}
+
+function loadSave(): SavedGame | null {
+  try {
+    const raw = localStorage.getItem(SAVE_KEY);
+    return raw ? (JSON.parse(raw) as SavedGame) : null;
+  } catch {
+    return null;
+  }
+}
+
+function clearSave() {
+  try {
+    localStorage.removeItem(SAVE_KEY);
+  } catch {
+    /* ignore */
+  }
+}
+
 const BASECAMP_KEYS = new Set(BASECAMP_SETTLEMENTS.map(s => s.key));
 
 function getVP(settlements: Settlement[], team: string): number {
@@ -69,16 +96,17 @@ function isTeamStuck(team: 'eagles' | 'rattlers', state: GameState): boolean {
 const teamLabel = (team: string) => team === 'eagles' ? '🦅 Eagles' : '🐍 Rattlers';
 
 export function SplitValleyGame({ onExit }: { onExit: () => void; paused: boolean }) {
-  const [state, setState] = useState<GameState>(() => makeInitialState());
-  const [phase, setPhase] = useState<Phase>('roll');
-  const [diceRolled, setDiceRolled] = useState(false);
+  const [save] = useState(loadSave);
+  const [state, setState] = useState<GameState>(() => save?.state ?? makeInitialState());
+  const [phase, setPhase] = useState<Phase>(() => save?.phase ?? 'roll');
+  const [diceRolled, setDiceRolled] = useState(() => save?.diceRolled ?? false);
   const [placingSettlement, setPlacingSettlement] = useState(false);
   const [placingCity, setPlacingCity] = useState(false);
   const [placingRoad, setPlacingRoad] = useState(false);
   const [placingWatchtower, setPlacingWatchtower] = useState(false);
-  const [log, setLog] = useState<string[]>(['⚔️ Split Valley begins! Eagles move first. Roll to start.']);
+  const [log, setLog] = useState<string[]>(() => save?.log ?? ['⚔️ Split Valley begins! Eagles move first. Roll to start.']);
   const [tradeOpen, setTradeOpen] = useState(false);
-  const [lastRaidTurn, setLastRaidTurn] = useState<number | null>(null);
+  const [lastRaidTurn, setLastRaidTurn] = useState<number | null>(() => save?.lastRaidTurn ?? null);
   const [winner, setWinner] = useState<string | null>(null);
   const [isDraw, setIsDraw] = useState(false);
   const [botThinking, setBotThinking] = useState(false);
@@ -119,6 +147,19 @@ export function SplitValleyGame({ onExit }: { onExit: () => void; paused: boolea
     else if (rattlersStuck) setWinner('eagles');
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [eaglesVP, rattlersVP, state.settlements, state.watchtowers, state.currentTurn, winner, isDraw]);
+
+  // ── Autosave — so leaving mid-game and coming back resumes instead of restarting ──
+  useEffect(() => {
+    if (winner || isDraw) {
+      clearSave();
+      return;
+    }
+    try {
+      localStorage.setItem(SAVE_KEY, JSON.stringify({ state, phase, diceRolled, log, lastRaidTurn }));
+    } catch {
+      /* ignore quota errors */
+    }
+  }, [state, phase, diceRolled, log, lastRaidTurn, winner, isDraw]);
 
   // ── Bot AI (Rattlers) ────────────────────────────────────────────────────
   useEffect(() => {
@@ -681,6 +722,7 @@ export function SplitValleyGame({ onExit }: { onExit: () => void; paused: boolea
   };
 
   const resetGame = () => {
+    clearSave();
     setState(makeInitialState());
     setPhase('roll');
     setDiceRolled(false);

@@ -17,6 +17,22 @@ const ENEMY_DATA = [
 let _id = 0;
 const uid = () => ++_id;
 
+const BEST_KEY = 'powersurge-best-score';
+function loadBest(): number {
+  try {
+    return parseInt(localStorage.getItem(BEST_KEY) ?? '0', 10) || 0;
+  } catch {
+    return 0;
+  }
+}
+function saveBest(score: number) {
+  try {
+    localStorage.setItem(BEST_KEY, String(score));
+  } catch {
+    /* ignore quota errors */
+  }
+}
+
 function seededRand(seed: number, n: number) {
   const x = Math.sin(seed * 127.1 + n * 311.7) * 43758.5453;
   return x - Math.floor(x);
@@ -111,6 +127,7 @@ export function PowerSurge({ onExit, paused }: { onExit: () => void; paused: boo
     frame: 0,
     spawnTimer: 0,
     surgeTimer: 0,
+    best: loadBest(),
   });
 
   const [, setUi] = useState({ score: 0, lives: 3, started: false, gameOver: false });
@@ -152,6 +169,16 @@ export function PowerSurge({ onExit, paused }: { onExit: () => void; paused: boo
       }
     };
 
+    const onGameOver = () => {
+      const g = s.current;
+      g.gameOver = true;
+      if (g.score > g.best) {
+        g.best = g.score;
+        saveBest(g.best);
+      }
+      setUi(u => ({ ...u, lives: 0, gameOver: true }));
+    };
+
     const spawnEnemy = () => {
       const g = s.current;
       const maxType = Math.min(2, Math.floor(g.level / 2));
@@ -191,10 +218,12 @@ export function PowerSurge({ onExit, paused }: { onExit: () => void; paused: boo
         if (g.gameOver) {
           hudText(ctx, 'Game Over', W / 2, H / 2 - 30, 26, '#d82800', 'center');
           hudText(ctx, `Score: ${g.score}`, W / 2, H / 2 + 10, 16, '#f8b800', 'center');
-          hudText(ctx, 'Press Space', W / 2, H / 2 + 50, 14, '#fcfcfc', 'center');
-          hudText(ctx, 'to play again', W / 2, H / 2 + 70, 14, '#fcfcfc', 'center');
+          hudText(ctx, `Best: ${g.best}`, W / 2, H / 2 + 32, 13, '#34d399', 'center');
+          hudText(ctx, 'Press Space', W / 2, H / 2 + 60, 14, '#fcfcfc', 'center');
+          hudText(ctx, 'to play again', W / 2, H / 2 + 80, 14, '#fcfcfc', 'center');
         } else {
           hudText(ctx, 'Power Surge', W / 2, H / 2 - 70, 30, '#f8b800', 'center');
+          hudText(ctx, `Best: ${g.best}`, W / 2, H / 2 - 45, 12, '#34d399', 'center');
           hudText(ctx, 'Dodge the bolts', W / 2, H / 2 - 25, 14, '#fcfcfc', 'center');
           hudText(ctx, 'Shoot the enemies', W / 2, H / 2, 14, '#fcfcfc', 'center');
           hudText(ctx, '← → move', W / 2, H / 2 + 50, 13, '#bcbcbc', 'center');
@@ -275,7 +304,7 @@ export function PowerSurge({ onExit, paused }: { onExit: () => void; paused: boo
             g.surges = g.surges.filter(x => x.id !== sg.id);
             g.lives--;
             g.player.x = W / 2 - 16;
-            if (g.lives <= 0) { g.gameOver = true; setUi(u => ({ ...u, lives: 0, gameOver: true })); }
+            if (g.lives <= 0) { onGameOver(); }
             else setUi(u => ({ ...u, lives: g.lives }));
           }
         }
@@ -287,7 +316,7 @@ export function PowerSurge({ onExit, paused }: { onExit: () => void; paused: boo
           if (e.x < px + 30 && e.x + 26 > px + 2 && e.y < py + 18 && e.y + 26 > py + 2) {
             g.enemies = g.enemies.filter(x => x.id !== e.id);
             g.lives--;
-            if (g.lives <= 0) { g.gameOver = true; setUi(u => ({ ...u, lives: 0, gameOver: true })); }
+            if (g.lives <= 0) { onGameOver(); }
             else setUi(u => ({ ...u, lives: g.lives }));
           }
         }
@@ -327,6 +356,7 @@ export function PowerSurge({ onExit, paused }: { onExit: () => void; paused: boo
       ctx.fillStyle = '#333';
       ctx.fillRect(0, 34, W, 2);
       hudText(ctx, `${g.score}`, 10, 23, 14, '#f8b800');
+      hudText(ctx, `Best ${Math.max(g.best, g.score)}`, 90, 23, 11, '#34d399');
       hudText(ctx, `Lvl ${g.level}`, W / 2, 23, 14, '#00b800', 'center');
       for (let i = 0; i < g.lives; i++) {
         ctx.font = '16px serif';
