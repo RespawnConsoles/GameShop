@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
-import type { Account, LibraryEntry, Studio, StoreState, WishlistEntry } from './types';
+import type { Account, Achievement, LibraryEntry, Studio, StudioGame, StoreState, WishlistEntry } from './types';
 
 const DEFAULT_STATE: StoreState = { wallet: 500, library: [], wishlist: [], account: null };
 
@@ -27,6 +27,10 @@ interface StoreContextValue extends StoreState {
   createStudio: (name: string) => Studio | null;
   renameStudio: (id: string, name: string) => void;
   deleteStudio: (id: string) => void;
+  addGameToStudio: (studioId: string, catalogGameId: string) => void;
+  removeGameFromStudio: (studioId: string, studioGameId: string) => void;
+  addAchievement: (studioId: string, studioGameId: string, name: string, description: string) => void;
+  deleteAchievement: (studioId: string, studioGameId: string, achievementId: string) => void;
 }
 
 const StoreContext = createContext<StoreContextValue | null>(null);
@@ -37,7 +41,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     window.gameshop.getStore().then((s) => {
-      setState(s);
+      // Defensive: normalize older persisted studios that predate the `games` field.
+      const normalized: StoreState = s.account
+        ? { ...s, account: { ...s.account, studios: s.account.studios.map((studio) => ({ ...studio, games: studio.games ?? [] })) } }
+        : s;
+      setState(normalized);
       setLoading(false);
     });
   }, []);
@@ -113,6 +121,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         name,
         color: STUDIO_COLORS[state.account.studios.length % STUDIO_COLORS.length],
         createdAt: new Date().toISOString(),
+        games: [],
       };
       persist({ ...state, account: { ...state.account, studios: [...state.account.studios, studio] } });
       return studio;
@@ -145,6 +154,66 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     [state, persist],
   );
 
+  const updateStudio = useCallback(
+    (studioId: string, fn: (studio: Studio) => Studio) => {
+      if (!state.account) return;
+      persist({
+        ...state,
+        account: {
+          ...state.account,
+          studios: state.account.studios.map((s) => (s.id === studioId ? fn(s) : s)),
+        },
+      });
+    },
+    [state, persist],
+  );
+
+  const addGameToStudio = useCallback(
+    (studioId: string, catalogGameId: string) => {
+      updateStudio(studioId, (studio) => {
+        if (studio.games.some((g) => g.catalogGameId === catalogGameId)) return studio;
+        const game: StudioGame = { id: makeId(), catalogGameId, achievements: [] };
+        return { ...studio, games: [...studio.games, game] };
+      });
+    },
+    [updateStudio],
+  );
+
+  const removeGameFromStudio = useCallback(
+    (studioId: string, studioGameId: string) => {
+      updateStudio(studioId, (studio) => ({
+        ...studio,
+        games: studio.games.filter((g) => g.id !== studioGameId),
+      }));
+    },
+    [updateStudio],
+  );
+
+  const addAchievement = useCallback(
+    (studioId: string, studioGameId: string, name: string, description: string) => {
+      const achievement: Achievement = { id: makeId(), name, description, createdAt: new Date().toISOString() };
+      updateStudio(studioId, (studio) => ({
+        ...studio,
+        games: studio.games.map((g) =>
+          g.id === studioGameId ? { ...g, achievements: [...g.achievements, achievement] } : g,
+        ),
+      }));
+    },
+    [updateStudio],
+  );
+
+  const deleteAchievement = useCallback(
+    (studioId: string, studioGameId: string, achievementId: string) => {
+      updateStudio(studioId, (studio) => ({
+        ...studio,
+        games: studio.games.map((g) =>
+          g.id === studioGameId ? { ...g, achievements: g.achievements.filter((a) => a.id !== achievementId) } : g,
+        ),
+      }));
+    },
+    [updateStudio],
+  );
+
   return (
     <StoreContext.Provider
       value={{
@@ -161,6 +230,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         createStudio,
         renameStudio,
         deleteStudio,
+        addGameToStudio,
+        removeGameFromStudio,
+        addAchievement,
+        deleteAchievement,
       }}
     >
       {children}

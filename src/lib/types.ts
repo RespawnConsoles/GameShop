@@ -12,11 +12,25 @@ export interface WishlistEntry {
   image: string | null;
 }
 
+export interface Achievement {
+  id: string;
+  name: string;
+  description: string;
+  createdAt: string;
+}
+
+export interface StudioGame {
+  id: string;
+  catalogGameId: string;
+  achievements: Achievement[];
+}
+
 export interface Studio {
   id: string;
   name: string;
   color: string;
   createdAt: string;
+  games: StudioGame[];
 }
 
 export interface Account {
