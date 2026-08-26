@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { playClick, playBuild, playPowerup } from '../../lib/sounds';
 
 interface Building { id: string; name: string; icon: string; count: number; baseCost: number; baseCps: number; color: string }
 interface Upgrade { id: string; name: string; desc: string; cost: number; mult: number; bought: boolean }
@@ -137,6 +138,7 @@ export function ConsoleClicker({ onExit, paused }: { onExit: () => void; paused:
 
     setClicking(true);
     setTimeout(() => setClicking(false), 80);
+    playClick();
   }, [clickMult]);
 
   const buyBuilding = useCallback((idx: number, qty: number = 1) => {
@@ -148,6 +150,7 @@ export function ConsoleClicker({ onExit, paused }: { onExit: () => void; paused:
       setCredits(creditsRef.current);
       const next = prev.map((x, i) => (i === idx ? { ...x, count: x.count + qty } : x));
       buildingsRef.current = next;
+      playBuild();
       return next;
     });
   }, []);
@@ -160,6 +163,7 @@ export function ConsoleClicker({ onExit, paused }: { onExit: () => void; paused:
       setCredits(creditsRef.current);
       const next = prev.map((x) => (x.id === uid ? { ...x, bought: true } : x));
       upgradesRef.current = next;
+      playPowerup();
       return next;
     });
   }, []);

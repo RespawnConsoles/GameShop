@@ -1,11 +1,17 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
-import type { LibraryEntry, StoreState, WishlistEntry } from './types';
+import type { Account, LibraryEntry, Studio, StoreState, WishlistEntry } from './types';
 
-const DEFAULT_STATE: StoreState = { wallet: 500, library: [], wishlist: [] };
+const DEFAULT_STATE: StoreState = { wallet: 500, library: [], wishlist: [], account: null };
 
 interface BuyResult {
   ok: boolean;
   reason?: string;
+}
+
+const STUDIO_COLORS = ['#34d399', '#60a5fa', '#f8b800', '#f87171', '#a78bfa', '#fb923c'];
+
+function makeId(): string {
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
 interface StoreContextValue extends StoreState {
@@ -15,6 +21,12 @@ interface StoreContextValue extends StoreState {
   buy: (entry: LibraryEntry) => BuyResult;
   toggleWishlist: (entry: WishlistEntry) => void;
   addFunds: (amount: number) => void;
+  createAccount: (email: string, name: string) => void;
+  renameAccount: (name: string) => void;
+  signOut: () => void;
+  createStudio: (name: string) => Studio | null;
+  renameStudio: (id: string, name: string) => void;
+  deleteStudio: (id: string) => void;
 }
 
 const StoreContext = createContext<StoreContextValue | null>(null);
@@ -44,6 +56,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       if (state.wallet < entry.price) return { ok: false, reason: 'Insufficient funds' };
 
       persist({
+        ...state,
         wallet: Math.round((state.wallet - entry.price) * 100) / 100,
         library: [...state.library, entry],
         wishlist: state.wishlist.filter((w) => w.id !== entry.id),
@@ -72,8 +85,84 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     [state, persist],
   );
 
+  const createAccount = useCallback(
+    (email: string, name: string) => {
+      const account: Account = { email, name, studios: [] };
+      persist({ ...state, account });
+    },
+    [state, persist],
+  );
+
+  const renameAccount = useCallback(
+    (name: string) => {
+      if (!state.account) return;
+      persist({ ...state, account: { ...state.account, name } });
+    },
+    [state, persist],
+  );
+
+  const signOut = useCallback(() => {
+    persist({ ...state, account: null });
+  }, [state, persist]);
+
+  const createStudio = useCallback(
+    (name: string): Studio | null => {
+      if (!state.account) return null;
+      const studio: Studio = {
+        id: makeId(),
+        name,
+        color: STUDIO_COLORS[state.account.studios.length % STUDIO_COLORS.length],
+        createdAt: new Date().toISOString(),
+      };
+      persist({ ...state, account: { ...state.account, studios: [...state.account.studios, studio] } });
+      return studio;
+    },
+    [state, persist],
+  );
+
+  const renameStudio = useCallback(
+    (id: string, name: string) => {
+      if (!state.account) return;
+      persist({
+        ...state,
+        account: {
+          ...state.account,
+          studios: state.account.studios.map((s) => (s.id === id ? { ...s, name } : s)),
+        },
+      });
+    },
+    [state, persist],
+  );
+
+  const deleteStudio = useCallback(
+    (id: string) => {
+      if (!state.account) return;
+      persist({
+        ...state,
+        account: { ...state.account, studios: state.account.studios.filter((s) => s.id !== id) },
+      });
+    },
+    [state, persist],
+  );
+
   return (
-    <StoreContext.Provider value={{ ...state, loading, owns, isWishlisted, buy, toggleWishlist, addFunds }}>
+    <StoreContext.Provider
+      value={{
+        ...state,
+        loading,
+        owns,
+        isWishlisted,
+        buy,
+        toggleWishlist,
+        addFunds,
+        createAccount,
+        renameAccount,
+        signOut,
+        createStudio,
+        renameStudio,
+        deleteStudio,
+      }}
+    >
       {children}
     </StoreContext.Provider>
   );

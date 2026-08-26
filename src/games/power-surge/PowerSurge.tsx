@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
+import { playShoot, playExplosion, playHit, playPowerup, playGameStart, playGameOver } from '../../lib/sounds';
 
 const W = 480;
 const H = 620;
@@ -141,6 +142,7 @@ export function PowerSurge({ onExit, paused }: { onExit: () => void; paused: boo
     g.rapidFire = false; g.shield = false;
     g.frame = 0; g.spawnTimer = 0; g.surgeTimer = 0;
     setUi({ score: 0, lives: 3, started: true, gameOver: false });
+    playGameStart();
   }, []);
 
   useEffect(() => {
@@ -166,12 +168,14 @@ export function PowerSurge({ onExit, paused }: { onExit: () => void; paused: boo
       if (now - g.lastShot > cd) {
         g.bullets.push({ id: uid(), x: g.player.x + 14, y: g.player.y });
         g.lastShot = now;
+        playShoot();
       }
     };
 
     const onGameOver = () => {
       const g = s.current;
       g.gameOver = true;
+      playGameOver();
       if (g.score > g.best) {
         g.best = g.score;
         saveBest(g.best);
@@ -287,6 +291,7 @@ export function PowerSurge({ onExit, paused }: { onExit: () => void; paused: boo
             if (e.hp <= 0) {
               deadEnemies.add(e.id);
               g.score += ENEMY_DATA[e.type].pts * g.level;
+              playExplosion();
               if (Math.random() < 0.18) {
                 g.powerups.push({ id: uid(), x: e.x + 4, y: e.y, kind: Math.random() < 0.5 ? 'shield' : 'rapid' });
               }
@@ -304,6 +309,7 @@ export function PowerSurge({ onExit, paused }: { onExit: () => void; paused: boo
             g.surges = g.surges.filter(x => x.id !== sg.id);
             g.lives--;
             g.player.x = W / 2 - 16;
+            playHit();
             if (g.lives <= 0) { onGameOver(); }
             else setUi(u => ({ ...u, lives: g.lives }));
           }
@@ -316,6 +322,7 @@ export function PowerSurge({ onExit, paused }: { onExit: () => void; paused: boo
           if (e.x < px + 30 && e.x + 26 > px + 2 && e.y < py + 18 && e.y + 26 > py + 2) {
             g.enemies = g.enemies.filter(x => x.id !== e.id);
             g.lives--;
+            playHit();
             if (g.lives <= 0) { onGameOver(); }
             else setUi(u => ({ ...u, lives: g.lives }));
           }
@@ -326,6 +333,7 @@ export function PowerSurge({ onExit, paused }: { onExit: () => void; paused: boo
       for (const p of [...g.powerups]) {
         if (p.x < px2 + 32 && p.x + 20 > px2 && p.y < py2 + 20 && p.y + 20 > py2) {
           g.powerups = g.powerups.filter(x => x.id !== p.id);
+          playPowerup();
           if (p.kind === 'shield') { g.shield = true; g.shieldUntil = time + 5000; }
           else { g.rapidFire = true; g.rapidUntil = time + 5000; }
         }

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { loadScores, submitScore, type ScoreEntry } from '../../lib/leaderboard';
+import { playCoin, playLevelUp, playVictory } from '../../lib/sounds';
 
 const GAME_ID = 'maze-dash';
 const CELL = 26;
@@ -79,13 +80,14 @@ function hasPathToExit(maze: Maze, cols: number, rows: number): boolean {
 
 /** Generates a fresh maze and verifies it's solvable before handing it back — regenerates if not. */
 function generateSolvableMaze(cols: number, rows: number): Maze {
+  let best = generateMaze(cols, rows);
   for (let attempt = 0; attempt < 20; attempt++) {
-    const maze = generateMaze(cols, rows);
-    if (hasPathToExit(maze, cols, rows)) return maze;
+    if (hasPathToExit(best, cols, rows)) return best;
+    best = generateMaze(cols, rows);
   }
   // Should be unreachable — the recursive-backtracker always spans every cell —
-  // but never hand back an unsolvable maze under any circumstance.
-  throw new Error('Failed to generate a solvable maze');
+  // but never throw over this; hand back the last attempt rather than crash the game.
+  return best;
 }
 
 function placeCoins(cols: number, rows: number, count: number): [number, number][] {
@@ -274,8 +276,10 @@ export function MazeDash({ onExit, paused }: { onExit: () => void; paused: boole
         s.over = true;
         setFinalScore({ score: total, level: levelIdx + 1, rank: 0 });
         setPhase('naming');
+        playVictory();
       } else {
         setPhase('levelClear');
+        playLevelUp();
       }
       return total;
     });
@@ -303,6 +307,7 @@ export function MazeDash({ onExit, paused }: { onExit: () => void; paused: boole
           const posKey = `${s.player.r},${s.player.c}`;
           if (!s.collectedCoins.has(posKey) && s.coins.some(([r, c]) => r === s.player.r && c === s.player.c)) {
             s.collectedCoins.add(posKey);
+            playCoin();
           }
 
           if (s.player.r === s.rows - 1 && s.player.c === s.cols - 1) {

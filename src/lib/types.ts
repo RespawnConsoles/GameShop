@@ -12,10 +12,24 @@ export interface WishlistEntry {
   image: string | null;
 }
 
+export interface Studio {
+  id: string;
+  name: string;
+  color: string;
+  createdAt: string;
+}
+
+export interface Account {
+  email: string;
+  name: string;
+  studios: Studio[];
+}
+
 export interface StoreState {
   wallet: number;
   library: LibraryEntry[];
   wishlist: WishlistEntry[];
+  account: Account | null;
 }
 
 export interface GameshopBridge {

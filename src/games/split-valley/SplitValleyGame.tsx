@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
+import { playDiceRoll, playBuild, playPowerup, playHit, playVictory } from '../../lib/sounds';
 import GameBoard from './components/GameBoard';
 import GameHUD from './components/GameHUD';
 import GameLog from './components/GameLog';
@@ -134,17 +135,17 @@ export function SplitValleyGame({ onExit }: { onExit: () => void; paused: boolea
   // Win / draw / starvation check
   useEffect(() => {
     if (winner || isDraw) return;
-    if (eaglesVP >= WIN_VP) { setWinner('eagles'); return; }
-    if (rattlersVP >= WIN_VP) { setWinner('rattlers'); return; }
+    if (eaglesVP >= WIN_VP) { setWinner('eagles'); playVictory(); return; }
+    if (rattlersVP >= WIN_VP) { setWinner('rattlers'); playVictory(); return; }
     const eaglesAnnihilated = state.settlements.filter(s => s.team === 'eagles').length === 0 && state.watchtowers.filter(w => w.team === 'eagles').length === 0;
     const rattlersAnnihilated = state.settlements.filter(s => s.team === 'rattlers').length === 0 && state.watchtowers.filter(w => w.team === 'rattlers').length === 0;
-    if (eaglesAnnihilated) { setWinner('rattlers'); return; }
-    if (rattlersAnnihilated) { setWinner('eagles'); return; }
+    if (eaglesAnnihilated) { setWinner('rattlers'); playVictory(); return; }
+    if (rattlersAnnihilated) { setWinner('eagles'); playVictory(); return; }
     const eaglesStuck = isTeamStuck('eagles', state);
     const rattlersStuck = isTeamStuck('rattlers', state);
     if (eaglesStuck && rattlersStuck) { setIsDraw(true); }
-    else if (eaglesStuck) setWinner('rattlers');
-    else if (rattlersStuck) setWinner('eagles');
+    else if (eaglesStuck) { setWinner('rattlers'); playVictory(); }
+    else if (rattlersStuck) { setWinner('eagles'); playVictory(); }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [eaglesVP, rattlersVP, state.settlements, state.watchtowers, state.currentTurn, winner, isDraw]);
 
@@ -450,6 +451,7 @@ export function SplitValleyGame({ onExit }: { onExit: () => void; paused: boolea
     setDiceRolled(true);
     setPhase('build');
     addLog(`🎲 ${teamLabel(state.currentTurn)} rolled ${total} (${d1}+${d2})`);
+    playDiceRoll();
   };
 
   const handleBuildSettlement = () => {
@@ -505,6 +507,7 @@ export function SplitValleyGame({ onExit }: { onExit: () => void; paused: boolea
     const vp = getVP(newSettlements, team);
     if (claimedBridge) addLog(`🌉 ${teamLabel(team)} claimed the ${claimedBridge.id} bridge!`);
     addLog(`🏠 ${teamLabel(team)} built a settlement (${vp} VP total)`);
+    playBuild();
   };
 
   const handlePlaceRoad = (edge: Edge) => {
@@ -517,6 +520,7 @@ export function SplitValleyGame({ onExit }: { onExit: () => void; paused: boolea
     setState(prev => ({ ...prev, roads: newRoads, resources: { ...prev.resources, [team]: res } }));
     setPlacingRoad(false);
     addLog(`🛣 ${teamLabel(team)} built a road`);
+    playBuild();
   };
 
   const handleUpgradeCity = (idx: number) => {
@@ -552,6 +556,7 @@ export function SplitValleyGame({ onExit }: { onExit: () => void; paused: boolea
     if (contestLog) addLog(contestLog);
     const vp = getVP(newSettlements, team);
     addLog(`🏙 ${teamLabel(team)} upgraded to a city (${vp} VP total)`);
+    playBuild();
   };
 
   const handleEndTurn = () => {
@@ -581,6 +586,7 @@ export function SplitValleyGame({ onExit }: { onExit: () => void; paused: boolea
     addLog(`🤝 Trade accepted! ${give.amount}× ${give.resource} → ${receive.amount}× ${receive.resource}`);
     setBotEvaluatingTrade(false);
     setTradeResult('accepted');
+    playPowerup();
     setTimeout(() => { setTradeResult(null); setTradeOpen(false); }, 1400);
   };
 
@@ -628,6 +634,7 @@ export function SplitValleyGame({ onExit }: { onExit: () => void; paused: boolea
     setState(prev => ({ ...prev, watchtowers: [...prev.watchtowers, newWatchtower], resources: { ...prev.resources, [team]: res } }));
     setPlacingWatchtower(false);
     addLog(`🗼 ${teamLabel(team)} built watchtower ${count}/5 — raids now ${count * 10}% chance of only 1 resource stolen`);
+    playBuild();
   };
 
   const handleCancelPlace = () => {
@@ -685,6 +692,7 @@ export function SplitValleyGame({ onExit }: { onExit: () => void; paused: boolea
     const bonusStr = ownsBothBridges ? ' (🌉×2 double haul!)' : '';
     const warnStr = cappedAtOne ? ' (🗼 blocked — only 1 stolen)' : bonusStr;
     addLog(`⚔️ ${teamLabel(team)} raided! Paid 1×${icons[costRes]}, stole ${stolenStr}${warnStr}`);
+    playHit();
   };
 
   const handleRaidTargetSettlement = (idx: number) => {
@@ -706,6 +714,7 @@ export function SplitValleyGame({ onExit }: { onExit: () => void; paused: boolea
     setLastRaidTurn(state.turn);
     setRaidPhase('idle');
     addLog(logMsg);
+    playHit();
   };
 
   const handleRaidTargetWatchtower = (idx: number) => {
@@ -719,6 +728,7 @@ export function SplitValleyGame({ onExit }: { onExit: () => void; paused: boolea
     setLastRaidTurn(state.turn);
     setRaidPhase('idle');
     addLog(`💥 ${teamLabel(team)} destroyed a ${teamLabel(other)} watchtower! (-10% raid protection, ${remaining} remain) Paid 1×${icons[costRes]}`);
+    playHit();
   };
 
   const resetGame = () => {

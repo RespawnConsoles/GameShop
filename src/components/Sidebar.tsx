@@ -1,6 +1,6 @@
-import { Heart, Library, Store } from 'lucide-react';
+import { Heart, Library, Store, Wand2 } from 'lucide-react';
 
-export type View = 'store' | 'library' | 'wishlist';
+export type View = 'store' | 'library' | 'wishlist' | 'creator';
 
 interface SidebarProps {
   view: View;
@@ -11,6 +11,7 @@ const ITEMS: { id: View; label: string; icon: typeof Store }[] = [
   { id: 'store', label: 'Store', icon: Store },
   { id: 'library', label: 'My Library', icon: Library },
   { id: 'wishlist', label: 'Wishlist', icon: Heart },
+  { id: 'creator', label: 'Creator', icon: Wand2 },
 ];
 
 export function Sidebar({ view, onChange }: SidebarProps) {

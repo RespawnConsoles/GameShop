@@ -9,6 +9,7 @@ const DEFAULT_STATE = {
   wallet: 500,
   library: [],
   wishlist: [],
+  account: null,
 };
 
 function readStore() {

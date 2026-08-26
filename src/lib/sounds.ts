@@ -30,7 +30,8 @@ function tone(
   startAt: number,
   duration: number,
   type: Wave = "square",
-  volume = 0.25
+  volume = 0.25,
+  endFreq?: number
 ) {
   try {
     const osc  = ac.createOscillator();
@@ -39,10 +40,37 @@ function tone(
     gain.connect(ac.destination);
     osc.type = type;
     osc.frequency.setValueAtTime(freq, startAt);
+    if (endFreq) osc.frequency.exponentialRampToValueAtTime(endFreq, startAt + duration);
     gain.gain.setValueAtTime(volume, startAt);
     gain.gain.exponentialRampToValueAtTime(0.001, startAt + duration);
     osc.start(startAt);
     osc.stop(startAt + duration + 0.01);
+  } catch { /* silent */ }
+}
+
+function noise(ac: AudioContext, startAt: number, duration: number, volume = 0.2, highpass = 0) {
+  try {
+    const len = Math.ceil(ac.sampleRate * duration);
+    const buf = ac.createBuffer(1, len, ac.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
+    const src = ac.createBufferSource();
+    src.buffer = buf;
+    const gain = ac.createGain();
+    gain.gain.setValueAtTime(volume, startAt);
+    gain.gain.exponentialRampToValueAtTime(0.001, startAt + duration);
+    if (highpass) {
+      const filter = ac.createBiquadFilter();
+      filter.type = "highpass";
+      filter.frequency.value = highpass;
+      src.connect(filter);
+      filter.connect(gain);
+    } else {
+      src.connect(gain);
+    }
+    gain.connect(ac.destination);
+    src.start(startAt);
+    src.stop(startAt + duration);
   } catch { /* silent */ }
 }
 
@@ -106,5 +134,83 @@ export function playSubmit() {
     tone(ac, 659,  t,        0.08, "square", 0.25);
     tone(ac, 880,  t + 0.10, 0.08, "square", 0.25);
     tone(ac, 1047, t + 0.20, 0.14, "square", 0.3);
+  });
+}
+
+/** Short UI blip — clicks, purchases, menu selects. */
+export function playClick() {
+  play((ac, t) => {
+    tone(ac, 880, t, 0.05, "square", 0.15);
+  });
+}
+
+/** Laser/projectile fired. */
+export function playShoot() {
+  play((ac, t) => {
+    tone(ac, 900, t, 0.06, "square", 0.12, 500);
+  });
+}
+
+/** Something destroyed — enemy death, brick break. */
+export function playExplosion() {
+  play((ac, t) => {
+    noise(ac, t, 0.14, 0.18, 200);
+    tone(ac, 140, t, 0.16, "sawtooth", 0.15, 40);
+  });
+}
+
+/** Player took damage. */
+export function playHit() {
+  play((ac, t) => {
+    tone(ac, 200, t, 0.12, "sawtooth", 0.22, 60);
+  });
+}
+
+/** Power-up / bonus collected. */
+export function playPowerup() {
+  play((ac, t) => {
+    tone(ac, 523, t,        0.08, "square", 0.22);
+    tone(ac, 784, t + 0.08, 0.12, "square", 0.24);
+  });
+}
+
+/** Coin / collectible pickup. */
+export function playCoin() {
+  play((ac, t) => {
+    tone(ac, 988,  t,        0.06, "square", 0.18);
+    tone(ac, 1319, t + 0.05, 0.09, "square", 0.2);
+  });
+}
+
+/** Construction — settlement, road, city, tower placed. */
+export function playBuild() {
+  play((ac, t) => {
+    tone(ac, 220, t,        0.07, "square", 0.2);
+    tone(ac, 330, t + 0.06, 0.1,  "square", 0.2);
+  });
+}
+
+/** Dice tumbling then landing. */
+export function playDiceRoll() {
+  play((ac, t) => {
+    for (let i = 0; i < 6; i++) noise(ac, t + i * 0.05, 0.04, 0.08, 1200);
+    tone(ac, 300, t + 0.32, 0.1, "square", 0.18);
+  });
+}
+
+/** A win / level cleared / escaped. */
+export function playVictory() {
+  play((ac, t) => {
+    const notes = [523, 659, 784, 1047];
+    const times = [0, 0.1, 0.2, 0.32];
+    notes.forEach((freq, i) => tone(ac, freq, t + times[i], 0.16, "square", 0.26));
+  });
+}
+
+/** Advancing to the next level. */
+export function playLevelUp() {
+  play((ac, t) => {
+    tone(ac, 440, t,        0.09, "square", 0.22);
+    tone(ac, 660, t + 0.08, 0.12, "square", 0.24);
   });
 }

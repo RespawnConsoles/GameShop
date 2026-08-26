@@ -9,6 +9,7 @@ import { Toast } from './components/Toast';
 import { StorePage } from './pages/StorePage';
 import { LibraryPage } from './pages/LibraryPage';
 import { WishlistPage } from './pages/WishlistPage';
+import { CreatorPage } from './pages/CreatorPage';
 
 export default function App() {
   const [view, setView] = useState<View>('store');
@@ -31,6 +32,7 @@ export default function App() {
           {view === 'store' && <StorePage search={search} onOpen={setActiveGame} />}
           {view === 'library' && <LibraryPage onPlay={setPlayingId} />}
           {view === 'wishlist' && <WishlistPage />}
+          {view === 'creator' && <CreatorPage />}
         </div>
       </div>
 
