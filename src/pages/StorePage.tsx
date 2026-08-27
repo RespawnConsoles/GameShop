@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import type { CatalogGame } from '../lib/catalog';
-import { CATALOG } from '../lib/catalog';
+import { CATALOG, uploadedGameToCatalogGame } from '../lib/catalog';
+import { useStore } from '../lib/store';
 import { GameCard } from '../components/GameCard';
 import { HeroCarousel } from '../components/HeroCarousel';
 import { GameShelf } from '../components/GameShelf';
@@ -13,14 +14,31 @@ interface StorePageProps {
 }
 
 export function StorePage({ search, onOpen }: StorePageProps) {
+  const { account, uploadedGames } = useStore();
   const query = search.trim().toLowerCase();
+
+  const published = useMemo((): CatalogGame[] => {
+    if (!account) return CATALOG;
+    const approved = uploadedGames
+      .filter((g) => g.status === 'approved')
+      .map((g) => {
+        const studio = account.studios.find((s) => s.id === g.studioId);
+        return uploadedGameToCatalogGame(g, studio?.name ?? 'Unknown Studio');
+      });
+    return [...CATALOG, ...approved];
+  }, [account, uploadedGames]);
+
+  const groups = useMemo(
+    () => (published.some((g) => g.group === 'Community') ? [...GROUPS, 'Community'] : GROUPS),
+    [published],
+  );
 
   const searchResults = useMemo(() => {
     if (!query) return null;
-    return CATALOG.filter(
+    return published.filter(
       (g) => g.title.toLowerCase().includes(query) || g.genre.toLowerCase().includes(query),
     );
-  }, [query]);
+  }, [query, published]);
 
   if (searchResults) {
     return (
@@ -44,8 +62,8 @@ export function StorePage({ search, onOpen }: StorePageProps) {
   return (
     <div className="flex-1 overflow-y-auto p-6">
       <HeroCarousel games={CATALOG} onOpen={onOpen} />
-      {GROUPS.map((group) => (
-        <GameShelf key={group} title={group} games={CATALOG.filter((g) => g.group === group)} onOpen={onOpen} />
+      {groups.map((group) => (
+        <GameShelf key={group} title={group} games={published.filter((g) => g.group === group)} onOpen={onOpen} />
       ))}
     </div>
   );

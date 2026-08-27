@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { ChevronLeft, Trash2, Trophy, Wand2 } from 'lucide-react';
+import { ChevronLeft, ShieldAlert, ShieldCheck, Trash2, Trophy, UploadCloud, Wand2 } from 'lucide-react';
 import { useStore } from '../lib/store';
 import { CATALOG } from '../lib/catalog';
-import type { Studio, StudioGame } from '../lib/types';
+import type { SecurityFinding, Studio, StudioGame, UploadedGame } from '../lib/types';
 
 function CreateAccountForm() {
   const { createAccount } = useStore();
@@ -201,7 +201,169 @@ function StudioGameCard({ studio, studioGame }: { studio: Studio; studioGame: St
   );
 }
 
+function FindingsList({ findings }: { findings: SecurityFinding[] }) {
+  return (
+    <ul className="flex flex-col gap-1">
+      {findings.map((f, i) => (
+        <li key={i} className="text-[11px] text-rose-300/80">
+          <span className="text-white/40">{f.file}:</span> {f.message}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function UploadedGameCard({ studio, game }: { studio: Studio; game: UploadedGame }) {
+  const { addAchievement, deleteAchievement, deleteUploadedGame } = useStore();
+
+  return (
+    <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
+      <div className="mb-2 flex items-center gap-3">
+        {game.status === 'approved' ? (
+          <ShieldCheck size={18} className="shrink-0 text-emerald-400" />
+        ) : (
+          <ShieldAlert size={18} className="shrink-0 text-rose-400" />
+        )}
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-medium text-white">{game.title}</p>
+          <p className={`text-[11px] ${game.status === 'approved' ? 'text-emerald-400' : 'text-rose-400'}`}>
+            {game.status === 'approved' ? 'Passed security check — published' : 'Failed security check — not published'}
+          </p>
+        </div>
+        <button
+          onClick={() => deleteUploadedGame(game.id)}
+          className="rounded p-1 text-white/20 hover:bg-white/10 hover:text-rose-400"
+          aria-label="Delete uploaded game"
+        >
+          <Trash2 size={13} />
+        </button>
+      </div>
+
+      {game.description && <p className="mb-2 text-xs text-white/40">{game.description}</p>}
+
+      {game.status === 'rejected' && game.findings.length > 0 && (
+        <div className="mb-2 rounded-md border border-rose-500/20 bg-rose-500/5 p-2">
+          <FindingsList findings={game.findings} />
+        </div>
+      )}
+
+      {game.status === 'approved' && (
+        <div className="flex flex-col gap-1.5">
+          {game.achievements.map((a) => (
+            <div key={a.id} className="flex items-center gap-2 rounded-md border border-white/5 bg-black/20 px-2.5 py-1.5">
+              <Trophy size={13} className="shrink-0 text-amber-400" />
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-xs font-medium text-white">{a.name}</p>
+                {a.description && <p className="truncate text-[11px] text-white/40">{a.description}</p>}
+              </div>
+              <button
+                onClick={() => deleteAchievement(studio.id, game.id, a.id)}
+                className="shrink-0 rounded p-0.5 text-white/20 hover:text-rose-400"
+                aria-label="Delete achievement"
+              >
+                <Trash2 size={12} />
+              </button>
+            </div>
+          ))}
+          <AddAchievementForm onAdd={(name, description) => addAchievement(studio.id, game.id, name, description)} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function UploadGameForm({ studio }: { studio: Studio }) {
+  const { uploadGame } = useStore();
+  const [open, setOpen] = useState(false);
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [findings, setFindings] = useState<SecurityFinding[] | null>(null);
+
+  if (!open) {
+    return (
+      <button
+        onClick={() => setOpen(true)}
+        className="flex items-center gap-2 rounded-md border border-dashed border-white/15 px-3 py-2 text-xs text-white/40 hover:border-white/30 hover:text-white/70"
+      >
+        <UploadCloud size={14} /> Upload a game
+      </button>
+    );
+  }
+
+  return (
+    <form
+      onSubmit={async (e) => {
+        e.preventDefault();
+        if (!title.trim() || busy) return;
+        setBusy(true);
+        setError(null);
+        setFindings(null);
+        const result = await uploadGame(studio.id, title.trim(), description.trim());
+        setBusy(false);
+        if (result.ok) {
+          setOpen(false);
+          setTitle('');
+          setDescription('');
+        } else if ('cancelled' in result) {
+          // user closed the folder picker — leave the form open as-is
+        } else {
+          setError(result.error);
+          setFindings(result.findings ?? null);
+        }
+      }}
+      className="flex flex-col gap-2 rounded-lg border border-white/10 bg-white/[0.03] p-3"
+    >
+      <p className="text-xs text-white/50">
+        Pick a folder containing an <code className="rounded bg-black/40 px-1">index.html</code>. It'll be copied in and scanned —
+        only games that pass get published.
+      </p>
+      <input
+        autoFocus
+        placeholder="Game title"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        className="rounded-md border border-white/10 bg-black/40 px-2.5 py-1.5 text-sm text-white placeholder:text-white/30 focus:border-emerald-500/50 focus:outline-none"
+      />
+      <input
+        placeholder="Description (optional)"
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+        className="rounded-md border border-white/10 bg-black/40 px-2.5 py-1.5 text-sm text-white placeholder:text-white/30 focus:border-emerald-500/50 focus:outline-none"
+      />
+
+      {error && (
+        <div className="rounded-md border border-rose-500/20 bg-rose-500/5 p-2">
+          <p className="mb-1 text-xs font-medium text-rose-400">{error}</p>
+          {findings && <FindingsList findings={findings} />}
+        </div>
+      )}
+
+      <div className="mt-1 flex gap-2">
+        <button
+          type="submit"
+          disabled={busy || !title.trim()}
+          className="flex-1 rounded-md bg-emerald-600 px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {busy ? 'Choose folder…' : 'Choose folder & upload'}
+        </button>
+        <button
+          type="button"
+          onClick={() => setOpen(false)}
+          className="rounded-md border border-white/10 px-2.5 py-1.5 text-xs text-white/60 hover:bg-white/5"
+        >
+          Cancel
+        </button>
+      </div>
+    </form>
+  );
+}
+
 function StudioDetail({ studio, onBack }: { studio: Studio; onBack: () => void }) {
+  const { uploadedGames } = useStore();
+  const studioUploads = uploadedGames.filter((g) => g.studioId === studio.id);
+
   return (
     <div>
       <button onClick={onBack} className="mb-4 flex items-center gap-1 text-sm text-white/60 hover:text-white">
@@ -215,19 +377,24 @@ function StudioDetail({ studio, onBack }: { studio: Studio; onBack: () => void }
 
       <h3 className="mb-1 text-sm font-semibold text-white/70">Games</h3>
       <p className="mb-3 text-xs text-white/30">
-        Games are linked here automatically when their credited maker matches this studio's name — there's no way to
-        manually claim a game that isn't actually yours.
+        Catalog games link here automatically when their credited maker matches this studio's name — there's no way
+        to manually claim a game that isn't actually yours. You can also upload your own; every upload runs through a
+        security check before it's published.
       </p>
-      <div className="flex flex-col gap-3">
-        {studio.games.length === 0 && (
+      <div className="mb-4 flex flex-col gap-3">
+        {studio.games.length === 0 && studioUploads.length === 0 && (
           <p className="text-sm text-white/30">
-            No games credit "{studio.name}" as their maker yet.
+            No games credit "{studio.name}" as their maker yet, and nothing's been uploaded.
           </p>
         )}
         {studio.games.map((sg) => (
           <StudioGameCard key={sg.id} studio={studio} studioGame={sg} />
         ))}
+        {studioUploads.map((g) => (
+          <UploadedGameCard key={g.id} studio={studio} game={g} />
+        ))}
       </div>
+      <UploadGameForm studio={studio} />
     </div>
   );
 }

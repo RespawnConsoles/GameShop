@@ -1,8 +1,8 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
 import { gamesForStudio } from './catalog';
-import type { Account, Achievement, LibraryEntry, Studio, StudioGame, StoreState, WishlistEntry } from './types';
+import type { Account, Achievement, LibraryEntry, Studio, StudioGame, StoreState, UploadedGame, WishlistEntry } from './types';
 
-const DEFAULT_STATE: StoreState = { wallet: 500, library: [], wishlist: [], account: null };
+const DEFAULT_STATE: StoreState = { wallet: 500, library: [], wishlist: [], account: null, uploadedGames: [] };
 
 interface BuyResult {
   ok: boolean;
@@ -46,7 +46,14 @@ interface StoreContextValue extends StoreState {
   removeGameFromStudio: (studioId: string, studioGameId: string) => void;
   addAchievement: (studioId: string, studioGameId: string, name: string, description: string) => void;
   deleteAchievement: (studioId: string, studioGameId: string, achievementId: string) => void;
+  uploadGame: (studioId: string, title: string, description: string) => Promise<UploadOutcome>;
+  deleteUploadedGame: (id: string) => void;
 }
+
+export type UploadOutcome =
+  | { ok: true; game: UploadedGame }
+  | { ok: false; error: string; findings?: { file: string; message: string }[] }
+  | { ok: false; cancelled: true };
 
 const StoreContext = createContext<StoreContextValue | null>(null);
 
@@ -58,15 +65,16 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     window.gameshop.getStore().then((s) => {
       // Defensive: normalize older persisted studios that predate the `games` field,
       // then sync in any catalog games whose maker now matches a studio's name.
-      const normalized: StoreState = s.account
-        ? {
-            ...s,
-            account: {
+      const normalized: StoreState = {
+        ...s,
+        uploadedGames: s.uploadedGames ?? [],
+        account: s.account
+          ? {
               ...s.account,
               studios: s.account.studios.map((studio) => syncStudioGames({ ...studio, games: studio.games ?? [] })),
-            },
-          }
-        : s;
+            }
+          : s.account,
+      };
       setState(normalized);
       setLoading(false);
     });
@@ -200,9 +208,24 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     [updateStudio],
   );
 
+  // studioGameId may refer either to a catalog-linked StudioGame or an UploadedGame's id.
+  const isUploadedGameId = useCallback(
+    (studioGameId: string) => state.uploadedGames.some((g) => g.id === studioGameId),
+    [state.uploadedGames],
+  );
+
   const addAchievement = useCallback(
     (studioId: string, studioGameId: string, name: string, description: string) => {
       const achievement: Achievement = { id: makeId(), name, description, createdAt: new Date().toISOString() };
+      if (isUploadedGameId(studioGameId)) {
+        persist({
+          ...state,
+          uploadedGames: state.uploadedGames.map((g) =>
+            g.id === studioGameId ? { ...g, achievements: [...g.achievements, achievement] } : g,
+          ),
+        });
+        return;
+      }
       updateStudio(studioId, (studio) => ({
         ...studio,
         games: studio.games.map((g) =>
@@ -210,11 +233,20 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         ),
       }));
     },
-    [updateStudio],
+    [state, persist, updateStudio, isUploadedGameId],
   );
 
   const deleteAchievement = useCallback(
     (studioId: string, studioGameId: string, achievementId: string) => {
+      if (isUploadedGameId(studioGameId)) {
+        persist({
+          ...state,
+          uploadedGames: state.uploadedGames.map((g) =>
+            g.id === studioGameId ? { ...g, achievements: g.achievements.filter((a) => a.id !== achievementId) } : g,
+          ),
+        });
+        return;
+      }
       updateStudio(studioId, (studio) => ({
         ...studio,
         games: studio.games.map((g) =>
@@ -222,7 +254,43 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         ),
       }));
     },
-    [updateStudio],
+    [state, persist, updateStudio, isUploadedGameId],
+  );
+
+  const uploadGame = useCallback(
+    async (studioId: string, title: string, description: string): Promise<UploadOutcome> => {
+      const result = await window.gameshop.uploadGame();
+      if (!result) return { ok: false, cancelled: true };
+      if (result.error || !result.id || !result.folder || !result.entryUrl || !result.status) {
+        return { ok: false, error: result.error ?? 'Upload failed.' };
+      }
+      const game: UploadedGame = {
+        id: result.id,
+        studioId,
+        title,
+        description,
+        entryUrl: result.entryUrl,
+        folder: result.folder,
+        status: result.status,
+        findings: result.findings ?? [],
+        achievements: [],
+        uploadedAt: new Date().toISOString(),
+      };
+      persist({ ...state, uploadedGames: [...state.uploadedGames, game] });
+      if (game.status === 'rejected') {
+        return { ok: false, error: 'Failed the security check.', findings: game.findings };
+      }
+      return { ok: true, game };
+    },
+    [state, persist],
+  );
+
+  const deleteUploadedGame = useCallback(
+    (id: string) => {
+      void window.gameshop.deleteUpload(id);
+      persist({ ...state, uploadedGames: state.uploadedGames.filter((g) => g.id !== id) });
+    },
+    [state, persist],
   );
 
   return (
@@ -244,6 +312,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         removeGameFromStudio,
         addAchievement,
         deleteAchievement,
+        uploadGame,
+        deleteUploadedGame,
       }}
     >
       {children}

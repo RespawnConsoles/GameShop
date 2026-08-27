@@ -7,7 +7,8 @@ interface LibraryPageProps {
 }
 
 export function LibraryPage({ onPlay }: LibraryPageProps) {
-  const { library } = useStore();
+  const { library, uploadedGames } = useStore();
+  const approvedUploadIds = new Set(uploadedGames.filter((g) => g.status === 'approved').map((g) => g.id));
 
   if (library.length === 0) {
     return (
@@ -25,7 +26,7 @@ export function LibraryPage({ onPlay }: LibraryPageProps) {
         {[...library]
           .sort((a, b) => b.purchasedAt.localeCompare(a.purchasedAt))
           .map((entry) => {
-            const playable = Boolean(PLAYABLE_GAMES[entry.id]);
+            const playable = Boolean(PLAYABLE_GAMES[entry.id]) || approvedUploadIds.has(entry.id);
             return (
               <div key={entry.id} className="group overflow-hidden rounded-lg border border-white/5 bg-white/[0.03]">
                 <div className="relative aspect-[16/9] overflow-hidden bg-black/40">

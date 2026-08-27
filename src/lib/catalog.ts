@@ -6,6 +6,8 @@ import dungeonArchitect from '../assets/games/dungeonarchitect.svg';
 import mazeDash from '../assets/games/mazedash.svg';
 import game2048 from '../assets/games/2048.svg';
 import gameTetris from '../assets/games/tetris.svg';
+import communityPlaceholder from '../assets/games/community-placeholder.svg';
+import type { UploadedGame } from './types';
 
 export interface CatalogGame {
   id: string;
@@ -126,4 +128,19 @@ export function gameBelongsToStudio(game: CatalogGame, studioName: string): bool
 
 export function gamesForStudio(studioName: string): CatalogGame[] {
   return CATALOG.filter((g) => gameBelongsToStudio(g, studioName));
+}
+
+/** Shapes an approved community upload into the same shape the store/library/player expect. */
+export function uploadedGameToCatalogGame(game: UploadedGame, studioName: string): CatalogGame {
+  return {
+    id: game.id,
+    title: game.title,
+    description: game.description || 'A community-uploaded game.',
+    genre: 'Community',
+    group: 'Community',
+    maker: studioName,
+    color: '#38bdf8',
+    image: communityPlaceholder,
+    price: 0,
+  };
 }
