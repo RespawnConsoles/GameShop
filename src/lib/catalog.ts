@@ -110,3 +110,20 @@ export const CATALOG: CatalogGame[] = [
     price: 0,
   },
 ];
+
+/**
+ * A game belongs to a studio only if the studio's name genuinely appears in the
+ * game's `maker` credit (e.g. "Respawn Studios" matches "Respawn Studios × Anonymous
+ * Creator"). This is the only path a game can end up linked to a studio — there is
+ * no manual "claim any game" flow, so a studio can't attribute someone else's work
+ * to itself just by asking.
+ */
+export function gameBelongsToStudio(game: CatalogGame, studioName: string): boolean {
+  const name = studioName.trim();
+  if (name.length < 3) return false;
+  return game.maker.toLowerCase().includes(name.toLowerCase());
+}
+
+export function gamesForStudio(studioName: string): CatalogGame[] {
+  return CATALOG.filter((g) => gameBelongsToStudio(g, studioName));
+}

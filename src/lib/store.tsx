@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
+import { gamesForStudio } from './catalog';
 import type { Account, Achievement, LibraryEntry, Studio, StudioGame, StoreState, WishlistEntry } from './types';
 
 const DEFAULT_STATE: StoreState = { wallet: 500, library: [], wishlist: [], account: null };
@@ -14,6 +15,21 @@ function makeId(): string {
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
+/**
+ * The only way a game joins a studio: its `maker` credit matches the studio's
+ * name. Adds any newly-matching games; never removes ones already linked (so a
+ * later rename can't silently erase achievements someone already curated).
+ */
+function syncStudioGames(studio: Studio): Studio {
+  const matched = gamesForStudio(studio.name);
+  const existingIds = new Set(studio.games.map((g) => g.catalogGameId));
+  const newGames: StudioGame[] = matched
+    .filter((g) => !existingIds.has(g.id))
+    .map((g) => ({ id: makeId(), catalogGameId: g.id, achievements: [] }));
+  if (newGames.length === 0) return studio;
+  return { ...studio, games: [...studio.games, ...newGames] };
+}
+
 interface StoreContextValue extends StoreState {
   loading: boolean;
   owns: (id: string) => boolean;
@@ -27,7 +43,6 @@ interface StoreContextValue extends StoreState {
   createStudio: (name: string) => Studio | null;
   renameStudio: (id: string, name: string) => void;
   deleteStudio: (id: string) => void;
-  addGameToStudio: (studioId: string, catalogGameId: string) => void;
   removeGameFromStudio: (studioId: string, studioGameId: string) => void;
   addAchievement: (studioId: string, studioGameId: string, name: string, description: string) => void;
   deleteAchievement: (studioId: string, studioGameId: string, achievementId: string) => void;
@@ -41,9 +56,16 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     window.gameshop.getStore().then((s) => {
-      // Defensive: normalize older persisted studios that predate the `games` field.
+      // Defensive: normalize older persisted studios that predate the `games` field,
+      // then sync in any catalog games whose maker now matches a studio's name.
       const normalized: StoreState = s.account
-        ? { ...s, account: { ...s.account, studios: s.account.studios.map((studio) => ({ ...studio, games: studio.games ?? [] })) } }
+        ? {
+            ...s,
+            account: {
+              ...s.account,
+              studios: s.account.studios.map((studio) => syncStudioGames({ ...studio, games: studio.games ?? [] })),
+            },
+          }
         : s;
       setState(normalized);
       setLoading(false);
@@ -116,13 +138,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const createStudio = useCallback(
     (name: string): Studio | null => {
       if (!state.account) return null;
-      const studio: Studio = {
+      const studio: Studio = syncStudioGames({
         id: makeId(),
         name,
         color: STUDIO_COLORS[state.account.studios.length % STUDIO_COLORS.length],
         createdAt: new Date().toISOString(),
         games: [],
-      };
+      });
       persist({ ...state, account: { ...state.account, studios: [...state.account.studios, studio] } });
       return studio;
     },
@@ -136,7 +158,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         ...state,
         account: {
           ...state.account,
-          studios: state.account.studios.map((s) => (s.id === id ? { ...s, name } : s)),
+          studios: state.account.studios.map((s) => (s.id === id ? syncStudioGames({ ...s, name }) : s)),
         },
       });
     },
@@ -166,17 +188,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       });
     },
     [state, persist],
-  );
-
-  const addGameToStudio = useCallback(
-    (studioId: string, catalogGameId: string) => {
-      updateStudio(studioId, (studio) => {
-        if (studio.games.some((g) => g.catalogGameId === catalogGameId)) return studio;
-        const game: StudioGame = { id: makeId(), catalogGameId, achievements: [] };
-        return { ...studio, games: [...studio.games, game] };
-      });
-    },
-    [updateStudio],
   );
 
   const removeGameFromStudio = useCallback(
@@ -230,7 +241,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         createStudio,
         renameStudio,
         deleteStudio,
-        addGameToStudio,
         removeGameFromStudio,
         addAchievement,
         deleteAchievement,

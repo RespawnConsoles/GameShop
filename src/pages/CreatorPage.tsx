@@ -201,46 +201,6 @@ function StudioGameCard({ studio, studioGame }: { studio: Studio; studioGame: St
   );
 }
 
-function AddGameToStudioForm({ studio }: { studio: Studio }) {
-  const { addGameToStudio } = useStore();
-  const [open, setOpen] = useState(false);
-  const linkedIds = new Set(studio.games.map((g) => g.catalogGameId));
-  const available = CATALOG.filter((g) => !linkedIds.has(g.id));
-
-  if (!open) {
-    return (
-      <button
-        onClick={() => setOpen(true)}
-        disabled={available.length === 0}
-        className="rounded-md border border-dashed border-white/15 px-3 py-2 text-xs text-white/40 hover:border-white/30 hover:text-white/70 disabled:cursor-not-allowed disabled:opacity-40"
-      >
-        + Add game to this studio
-      </button>
-    );
-  }
-
-  return (
-    <div className="flex flex-wrap gap-2">
-      {available.map((g) => (
-        <button
-          key={g.id}
-          onClick={() => {
-            addGameToStudio(studio.id, g.id);
-            setOpen(false);
-          }}
-          className="flex items-center gap-2 rounded-md border border-white/10 bg-white/[0.03] px-2.5 py-1.5 text-xs text-white hover:border-white/30"
-        >
-          <img src={g.image} alt="" className="h-6 w-10 rounded object-cover" />
-          {g.title}
-        </button>
-      ))}
-      <button onClick={() => setOpen(false)} className="rounded-md border border-white/10 px-2.5 py-1.5 text-xs text-white/60 hover:bg-white/5">
-        Cancel
-      </button>
-    </div>
-  );
-}
-
 function StudioDetail({ studio, onBack }: { studio: Studio; onBack: () => void }) {
   return (
     <div>
@@ -253,14 +213,21 @@ function StudioDetail({ studio, onBack }: { studio: Studio; onBack: () => void }
         <h2 className="text-xl font-semibold text-white">{studio.name}</h2>
       </div>
 
-      <h3 className="mb-3 text-sm font-semibold text-white/70">Games</h3>
-      <div className="mb-4 flex flex-col gap-3">
-        {studio.games.length === 0 && <p className="text-sm text-white/30">No games added to this studio yet.</p>}
+      <h3 className="mb-1 text-sm font-semibold text-white/70">Games</h3>
+      <p className="mb-3 text-xs text-white/30">
+        Games are linked here automatically when their credited maker matches this studio's name — there's no way to
+        manually claim a game that isn't actually yours.
+      </p>
+      <div className="flex flex-col gap-3">
+        {studio.games.length === 0 && (
+          <p className="text-sm text-white/30">
+            No games credit "{studio.name}" as their maker yet.
+          </p>
+        )}
         {studio.games.map((sg) => (
           <StudioGameCard key={sg.id} studio={studio} studioGame={sg} />
         ))}
       </div>
-      <AddGameToStudioForm studio={studio} />
     </div>
   );
 }
