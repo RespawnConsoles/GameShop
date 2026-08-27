@@ -51,6 +51,7 @@ export interface UploadedGame {
   studioId: string;
   title: string;
   description: string;
+  image: string | null;
   entryUrl: string;
   folder: string;
   status: UploadStatus;
@@ -76,9 +77,15 @@ export interface UploadDialogResult {
   findings?: SecurityFinding[];
 }
 
+export interface IconDialogResult {
+  error?: string;
+  dataUrl?: string;
+}
+
 export interface GameshopBridge {
   getStore: () => Promise<StoreState>;
   setStore: (state: StoreState) => Promise<StoreState>;
   uploadGame: () => Promise<UploadDialogResult | null>;
+  pickGameIcon: () => Promise<IconDialogResult | null>;
   deleteUpload: (id: string) => Promise<void>;
 }

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronLeft, ShieldAlert, ShieldCheck, Trash2, Trophy, UploadCloud, Wand2 } from 'lucide-react';
+import { ChevronLeft, Image as ImageIcon, Pencil, ShieldAlert, ShieldCheck, Trash2, Trophy, UploadCloud, Wand2 } from 'lucide-react';
 import { useStore } from '../lib/store';
 import { CATALOG } from '../lib/catalog';
 import type { SecurityFinding, Studio, StudioGame, UploadedGame } from '../lib/types';
@@ -213,19 +213,108 @@ function FindingsList({ findings }: { findings: SecurityFinding[] }) {
   );
 }
 
+function GameIconPicker({ gameId, image }: { gameId: string; image: string | null }) {
+  const { pickUploadedGameIcon } = useStore();
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  return (
+    <div className="shrink-0">
+      <button
+        onClick={async () => {
+          setBusy(true);
+          setError(null);
+          const result = await pickUploadedGameIcon(gameId);
+          setBusy(false);
+          if (!result.ok && result.error) setError(result.error);
+        }}
+        disabled={busy}
+        className="group relative h-11 w-11 overflow-hidden rounded-md border border-white/10 bg-black/30 disabled:opacity-50"
+        title={image ? 'Change icon' : 'Set icon'}
+      >
+        {image ? (
+          <img src={image} alt="" className="h-full w-full object-cover" />
+        ) : (
+          <ImageIcon size={16} className="absolute inset-0 m-auto text-white/25" />
+        )}
+        <span className="absolute inset-0 flex items-center justify-center bg-black/60 text-[9px] font-medium text-white opacity-0 transition group-hover:opacity-100">
+          {busy ? '…' : image ? 'Change' : 'Set icon'}
+        </span>
+      </button>
+      {error && <p className="mt-1 max-w-[6rem] text-[10px] text-rose-400">{error}</p>}
+    </div>
+  );
+}
+
+function EditableDescription({ gameId, description }: { gameId: string; description: string }) {
+  const { updateUploadedGameDescription } = useStore();
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(description);
+
+  if (editing) {
+    return (
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          updateUploadedGameDescription(gameId, draft.trim());
+          setEditing(false);
+        }}
+        className="mb-2 flex flex-col gap-1.5"
+      >
+        <textarea
+          autoFocus
+          rows={2}
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          placeholder="Describe this game…"
+          className="resize-none rounded-md border border-white/10 bg-black/40 px-2.5 py-1.5 text-xs text-white placeholder:text-white/30 focus:border-emerald-500/50 focus:outline-none"
+        />
+        <div className="flex gap-2">
+          <button type="submit" className="rounded bg-emerald-600 px-2.5 py-1 text-[11px] font-semibold text-white hover:bg-emerald-500">
+            Save
+          </button>
+          <button
+            type="button"
+            onClick={() => { setDraft(description); setEditing(false); }}
+            className="rounded border border-white/10 px-2.5 py-1 text-[11px] text-white/60 hover:bg-white/5"
+          >
+            Cancel
+          </button>
+        </div>
+      </form>
+    );
+  }
+
+  return (
+    <div className="mb-2 flex items-start gap-2">
+      <p className="flex-1 text-xs text-white/40">{description || 'No description yet.'}</p>
+      <button
+        onClick={() => { setDraft(description); setEditing(true); }}
+        className="shrink-0 rounded p-0.5 text-white/20 hover:text-white/60"
+        aria-label="Edit description"
+      >
+        <Pencil size={12} />
+      </button>
+    </div>
+  );
+}
+
 function UploadedGameCard({ studio, game }: { studio: Studio; game: UploadedGame }) {
   const { addAchievement, deleteAchievement, deleteUploadedGame } = useStore();
 
   return (
     <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
       <div className="mb-2 flex items-center gap-3">
-        {game.status === 'approved' ? (
-          <ShieldCheck size={18} className="shrink-0 text-emerald-400" />
-        ) : (
-          <ShieldAlert size={18} className="shrink-0 text-rose-400" />
-        )}
+        <GameIconPicker gameId={game.id} image={game.image} />
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-medium text-white">{game.title}</p>
+          <div className="flex items-center gap-1.5">
+            {game.status === 'approved' ? (
+              <ShieldCheck size={14} className="shrink-0 text-emerald-400" />
+            ) : (
+              <ShieldAlert size={14} className="shrink-0 text-rose-400" />
+            )}
+            <p className="truncate text-sm font-medium text-white">{game.title}</p>
+          </div>
           <p className={`text-[11px] ${game.status === 'approved' ? 'text-emerald-400' : 'text-rose-400'}`}>
             {game.status === 'approved' ? 'Passed security check — published' : 'Failed security check — not published'}
           </p>
@@ -239,7 +328,7 @@ function UploadedGameCard({ studio, game }: { studio: Studio; game: UploadedGame
         </button>
       </div>
 
-      {game.description && <p className="mb-2 text-xs text-white/40">{game.description}</p>}
+      <EditableDescription gameId={game.id} description={game.description} />
 
       {game.status === 'rejected' && game.findings.length > 0 && (
         <div className="mb-2 rounded-md border border-rose-500/20 bg-rose-500/5 p-2">

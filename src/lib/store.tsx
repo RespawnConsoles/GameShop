@@ -47,6 +47,8 @@ interface StoreContextValue extends StoreState {
   addAchievement: (studioId: string, studioGameId: string, name: string, description: string) => void;
   deleteAchievement: (studioId: string, studioGameId: string, achievementId: string) => void;
   uploadGame: (studioId: string, title: string, description: string) => Promise<UploadOutcome>;
+  updateUploadedGameDescription: (id: string, description: string) => void;
+  pickUploadedGameIcon: (id: string) => Promise<{ ok: boolean; error?: string }>;
   deleteUploadedGame: (id: string) => void;
 }
 
@@ -269,6 +271,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         studioId,
         title,
         description,
+        image: null,
         entryUrl: result.entryUrl,
         folder: result.folder,
         status: result.status,
@@ -281,6 +284,30 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         return { ok: false, error: 'Failed the security check.', findings: game.findings };
       }
       return { ok: true, game };
+    },
+    [state, persist],
+  );
+
+  const updateUploadedGameDescription = useCallback(
+    (id: string, description: string) => {
+      persist({
+        ...state,
+        uploadedGames: state.uploadedGames.map((g) => (g.id === id ? { ...g, description } : g)),
+      });
+    },
+    [state, persist],
+  );
+
+  const pickUploadedGameIcon = useCallback(
+    async (id: string): Promise<{ ok: boolean; error?: string }> => {
+      const result = await window.gameshop.pickGameIcon();
+      if (!result) return { ok: false };
+      if (result.error || !result.dataUrl) return { ok: false, error: result.error ?? 'Could not set the icon.' };
+      persist({
+        ...state,
+        uploadedGames: state.uploadedGames.map((g) => (g.id === id ? { ...g, image: result.dataUrl! } : g)),
+      });
+      return { ok: true };
     },
     [state, persist],
   );
@@ -313,6 +340,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         addAchievement,
         deleteAchievement,
         uploadGame,
+        updateUploadedGameDescription,
+        pickUploadedGameIcon,
         deleteUploadedGame,
       }}
     >

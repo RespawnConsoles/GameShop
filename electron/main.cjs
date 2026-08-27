@@ -106,6 +106,33 @@ ipcMain.handle('game:upload', async () => {
   return { id, folder: destDir, entryUrl, status, findings };
 });
 
+const ICON_MIME = { '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.svg': 'image/svg+xml', '.webp': 'image/webp', '.gif': 'image/gif' };
+const MAX_ICON_BYTES = 3 * 1024 * 1024;
+
+ipcMain.handle('game:pickIcon', async () => {
+  const win = BrowserWindow.getFocusedWindow();
+  const result = await dialog.showOpenDialog(win, {
+    properties: ['openFile'],
+    title: 'Choose a game icon',
+    filters: [{ name: 'Images', extensions: ['png', 'jpg', 'jpeg', 'svg', 'webp', 'gif'] }],
+  });
+  if (result.canceled || result.filePaths.length === 0) return null;
+
+  const filePath = result.filePaths[0];
+  const ext = path.extname(filePath).toLowerCase();
+  const mime = ICON_MIME[ext];
+  if (!mime) return { error: 'Unsupported image type.' };
+
+  const stat = fs.statSync(filePath);
+  if (stat.size > MAX_ICON_BYTES) {
+    return { error: `Image is ${(stat.size / 1024 / 1024).toFixed(1)}MB, over the 3MB limit.` };
+  }
+
+  const data = fs.readFileSync(filePath);
+  const dataUrl = `data:${mime};base64,${data.toString('base64')}`;
+  return { dataUrl };
+});
+
 ipcMain.handle('game:deleteUpload', (_event, id) => {
   if (typeof id !== 'string' || !id.startsWith('upload-')) return;
   const target = path.join(uploadsDir, id);

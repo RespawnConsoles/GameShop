@@ -140,7 +140,7 @@ export function uploadedGameToCatalogGame(game: UploadedGame, studioName: string
     group: 'Community',
     maker: studioName,
     color: '#38bdf8',
-    image: communityPlaceholder,
+    image: game.image || communityPlaceholder,
     price: 0,
   };
 }
