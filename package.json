@@ -12,7 +12,8 @@
     "electron": "concurrently -k -n VITE,ELECTRON -c green,blue \"cross-env BROWSER=none vite\" \"wait-on tcp:5173 && electron .\"",
     "dist:mac": "npm run build && electron-builder --mac --arm64 --dir",
     "release:mac": "npm run build && electron-builder --mac --arm64",
-    "publish:mac": "npm run build && electron-builder --mac --arm64 --publish always"
+    "publish:mac": "npm run build && electron-builder --mac --arm64 --publish always && npm run install:mac",
+    "install:mac": "rm -rf /Applications/GameShop.app && cp -R release/mac-arm64/GameShop.app /Applications/GameShop.app"
   },
   "build": {
     "appId": "com.gameshop.app",
