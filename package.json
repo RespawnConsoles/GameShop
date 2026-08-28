@@ -26,8 +26,10 @@
     },
     "mac": {
       "category": "public.app-category.games",
-      "target": "dmg"
+      "target": "dmg",
+      "identity": null
     },
+    "afterSign": "scripts/afterSign.cjs",
     "publish": {
       "provider": "github",
       "owner": "RespawnConsoles",

@@ -1,4 +1,4 @@
-import { Gamepad2, Plus, Search, Wallet } from 'lucide-react';
+import { Gamepad2, Plus, Search, Share2, Wallet } from 'lucide-react';
 import { useStore } from '../lib/store';
 
 interface TopBarProps {
@@ -36,6 +36,14 @@ export function TopBar({ search, onSearch, showSearch }: TopBarProps) {
       >
         <Plus size={13} />
         Add funds
+      </button>
+      <button
+        onClick={() => void window.gameshop.shareViaMessages()}
+        className="no-drag flex items-center gap-1.5 rounded-md border border-white/10 px-3 py-1.5 text-xs text-white/60 transition hover:bg-white/5 hover:text-white"
+        title="Share GameShop via Messages"
+      >
+        <Share2 size={13} />
+        Share
       </button>
       <div className="no-drag flex items-center gap-1.5 rounded-md bg-emerald-600/15 px-3 py-1.5 text-sm font-medium text-emerald-400">
         <Wallet size={14} />${wallet.toFixed(2)}

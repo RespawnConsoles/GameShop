@@ -6,4 +6,5 @@ contextBridge.exposeInMainWorld('gameshop', {
   uploadGame: () => ipcRenderer.invoke('game:upload'),
   pickGameIcon: () => ipcRenderer.invoke('game:pickIcon'),
   deleteUpload: (id) => ipcRenderer.invoke('game:deleteUpload', id),
+  shareViaMessages: () => ipcRenderer.invoke('app:shareViaMessages'),
 });

@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, dialog, Notification } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, Notification, shell } = require('electron');
 const path = require('node:path');
 const fs = require('node:fs');
 const crypto = require('node:crypto');
@@ -155,6 +155,18 @@ function writeStore(state) {
   fs.mkdirSync(path.dirname(storePath), { recursive: true });
   fs.writeFileSync(storePath, JSON.stringify(state, null, 2));
 }
+
+const SHARE_MESSAGE =
+  "Check out GameShop, a game marketplace app I built — download it here: https://github.com/RespawnConsoles/GameShop/releases/latest";
+
+ipcMain.handle('app:shareViaMessages', async () => {
+  try {
+    await shell.openExternal(`sms:&body=${encodeURIComponent(SHARE_MESSAGE)}`);
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err.message };
+  }
+});
 
 ipcMain.handle('store:get', () => readStore());
 ipcMain.handle('store:set', (_event, state) => {

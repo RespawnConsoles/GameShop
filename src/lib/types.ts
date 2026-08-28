@@ -88,4 +88,5 @@ export interface GameshopBridge {
   uploadGame: () => Promise<UploadDialogResult | null>;
   pickGameIcon: () => Promise<IconDialogResult | null>;
   deleteUpload: (id: string) => Promise<void>;
+  shareViaMessages: () => Promise<{ ok: boolean; error?: string }>;
 }
