@@ -213,7 +213,8 @@ export function ConsoleDrop({ onExit, paused }: { onExit: () => void; paused: bo
         s.caught += 1;
         s.level = Math.floor(s.caught / 8) + 1;
         s.flashes.push({ x: item.x + ITEM_W / 2, y: item.y, label: `+${item.type.pts}`, alpha: 1, color: item.type.color });
-        item.type.label === 'RETRO' ? playCatchRare() : playCatch();
+        if (item.type.label === 'RETRO') playCatchRare();
+        else playCatch();
         setUi({ score: s.score, lives: s.lives, level: s.level });
         continue;
       }
