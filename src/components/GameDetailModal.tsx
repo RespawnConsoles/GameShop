@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Heart, X } from 'lucide-react';
+import { Heart, Trophy, X } from 'lucide-react';
 import type { CatalogGame } from '../lib/catalog';
 import { useStore } from '../lib/store';
 
@@ -11,8 +11,9 @@ interface GameDetailModalProps {
 }
 
 export function GameDetailModal({ game, onClose, onPurchased, onPlay }: GameDetailModalProps) {
-  const { owns, isWishlisted, toggleWishlist, buy } = useStore();
+  const { owns, isWishlisted, toggleWishlist, buy, getAchievementsForGame } = useStore();
   const [error, setError] = useState<string | null>(null);
+  const achievements = getAchievementsForGame(game.id);
 
   const price = game.price;
   const owned = owns(game.id);
@@ -73,6 +74,25 @@ export function GameDetailModal({ game, onClose, onPurchased, onPlay }: GameDeta
           </div>
 
           <p className="text-sm leading-relaxed text-white/60">{game.description}</p>
+
+          {achievements.length > 0 && (
+            <div>
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-white/40">
+                Achievements {owned && <span className="text-emerald-400">· Owned</span>}
+              </p>
+              <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
+                {achievements.map((a) => (
+                  <div key={a.id} className="flex items-center gap-2 rounded-md border border-white/5 bg-white/[0.03] px-2.5 py-1.5">
+                    <Trophy size={14} className={`shrink-0 ${owned ? 'text-amber-400' : 'text-white/25'}`} />
+                    <div className="min-w-0">
+                      <p className="truncate text-xs font-medium text-white/90">{a.name}</p>
+                      {a.description && <p className="truncate text-[11px] text-white/40">{a.description}</p>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="flex items-center gap-3 border-t border-white/10 pt-4">
             {owned ? (

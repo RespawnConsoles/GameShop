@@ -50,6 +50,7 @@ interface StoreContextValue extends StoreState {
   updateUploadedGameDescription: (id: string, description: string) => void;
   pickUploadedGameIcon: (id: string) => Promise<{ ok: boolean; error?: string }>;
   deleteUploadedGame: (id: string) => void;
+  getAchievementsForGame: (gameId: string) => Achievement[];
 }
 
 export type UploadOutcome =
@@ -320,6 +321,20 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     [state, persist],
   );
 
+  const getAchievementsForGame = useCallback(
+    (gameId: string): Achievement[] => {
+      const upload = state.uploadedGames.find((g) => g.id === gameId);
+      if (upload) return upload.achievements;
+      if (!state.account) return [];
+      for (const studio of state.account.studios) {
+        const sg = studio.games.find((g) => g.catalogGameId === gameId);
+        if (sg) return sg.achievements;
+      }
+      return [];
+    },
+    [state.uploadedGames, state.account],
+  );
+
   return (
     <StoreContext.Provider
       value={{
@@ -343,6 +358,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         updateUploadedGameDescription,
         pickUploadedGameIcon,
         deleteUploadedGame,
+        getAchievementsForGame,
       }}
     >
       {children}

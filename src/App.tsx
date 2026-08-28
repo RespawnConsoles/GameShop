@@ -30,7 +30,7 @@ export default function App() {
         <div className="flex flex-1 overflow-hidden">
           <Sidebar view={view} onChange={setView} />
           {view === 'store' && <StorePage search={search} onOpen={setActiveGame} />}
-          {view === 'library' && <LibraryPage onPlay={setPlayingId} />}
+          {view === 'library' && <LibraryPage onPlay={setPlayingId} onOpen={setActiveGame} />}
           {view === 'wishlist' && <WishlistPage />}
           {view === 'creator' && <CreatorPage />}
         </div>

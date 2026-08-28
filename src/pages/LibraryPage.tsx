@@ -1,13 +1,15 @@
 import { Library as LibraryIcon } from 'lucide-react';
 import { useStore } from '../lib/store';
 import { PLAYABLE_GAMES } from '../games';
+import { resolveCatalogGame, type CatalogGame } from '../lib/catalog';
 
 interface LibraryPageProps {
   onPlay: (id: string) => void;
+  onOpen: (game: CatalogGame) => void;
 }
 
-export function LibraryPage({ onPlay }: LibraryPageProps) {
-  const { library, uploadedGames } = useStore();
+export function LibraryPage({ onPlay, onOpen }: LibraryPageProps) {
+  const { library, uploadedGames, account } = useStore();
   const approvedUploadIds = new Set(uploadedGames.filter((g) => g.status === 'approved').map((g) => g.id));
 
   if (library.length === 0) {
@@ -27,8 +29,13 @@ export function LibraryPage({ onPlay }: LibraryPageProps) {
           .sort((a, b) => b.purchasedAt.localeCompare(a.purchasedAt))
           .map((entry) => {
             const playable = Boolean(PLAYABLE_GAMES[entry.id]) || approvedUploadIds.has(entry.id);
+            const resolved = resolveCatalogGame(entry.id, uploadedGames, account);
             return (
-              <div key={entry.id} className="group overflow-hidden rounded-lg border border-white/5 bg-white/[0.03]">
+              <div
+                key={entry.id}
+                onClick={() => resolved && onOpen(resolved)}
+                className={`group overflow-hidden rounded-lg border border-white/5 bg-white/[0.03] ${resolved ? 'cursor-pointer hover:border-white/15' : ''}`}
+              >
                 <div className="relative aspect-[16/9] overflow-hidden bg-black/40">
                   {entry.image ? (
                     <img src={entry.image} alt={entry.name} className="h-full w-full object-cover" />
@@ -37,7 +44,10 @@ export function LibraryPage({ onPlay }: LibraryPageProps) {
                   )}
                   {playable && (
                     <button
-                      onClick={() => onPlay(entry.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onPlay(entry.id);
+                      }}
                       className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition group-hover:opacity-100"
                     >
                       <span className="rounded-md bg-emerald-600 px-4 py-2 text-sm font-semibold text-white">▶ Play</span>

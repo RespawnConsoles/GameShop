@@ -7,7 +7,7 @@ import mazeDash from '../assets/games/mazedash.svg';
 import game2048 from '../assets/games/2048.svg';
 import gameTetris from '../assets/games/tetris.svg';
 import communityPlaceholder from '../assets/games/community-placeholder.svg';
-import type { UploadedGame } from './types';
+import type { Account, UploadedGame } from './types';
 
 export interface CatalogGame {
   id: string;
@@ -143,4 +143,14 @@ export function uploadedGameToCatalogGame(game: UploadedGame, studioName: string
     image: game.image || communityPlaceholder,
     price: 0,
   };
+}
+
+/** Resolves any game id (built-in catalog or a community upload) into a displayable CatalogGame. */
+export function resolveCatalogGame(id: string, uploadedGames: UploadedGame[], account: Account | null): CatalogGame | null {
+  const builtIn = CATALOG.find((g) => g.id === id);
+  if (builtIn) return builtIn;
+  const upload = uploadedGames.find((g) => g.id === id);
+  if (!upload) return null;
+  const studio = account?.studios.find((s) => s.id === upload.studioId);
+  return uploadedGameToCatalogGame(upload, studio?.name ?? 'Unknown Studio');
 }

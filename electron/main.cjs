@@ -1,8 +1,9 @@
-const { app, BrowserWindow, ipcMain, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, Notification } = require('electron');
 const path = require('node:path');
 const fs = require('node:fs');
 const crypto = require('node:crypto');
 const { pathToFileURL } = require('node:url');
+const { autoUpdater } = require('electron-updater');
 
 const isDev = !app.isPackaged;
 const storePath = path.join(app.getPath('userData'), 'gameshop-store.json');
@@ -191,6 +192,21 @@ app.whenReady().then(() => {
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
+
+  if (!isDev) {
+    autoUpdater.autoDownload = true;
+    autoUpdater.autoInstallOnAppQuit = true;
+    autoUpdater.on('update-downloaded', () => {
+      if (Notification.isSupported()) {
+        new Notification({
+          title: 'GameShop update ready',
+          body: 'It will finish installing the next time you quit and reopen GameShop.',
+        }).show();
+      }
+    });
+    // Silent by design: no releases yet, or offline, shouldn't surface an error to the user.
+    autoUpdater.checkForUpdates().catch(() => {});
+  }
 });
 
 app.on('window-all-closed', () => {
